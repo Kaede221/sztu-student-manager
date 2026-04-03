@@ -1,8 +1,9 @@
 import { useEffect, useState } from 'react';
-import { Card, Descriptions, Button, Modal, Form, Select, Input, message, Spin } from 'antd';
-import { EditOutlined } from '@ant-design/icons';
-import { getMyInfo, editMyInfo } from '../api/user';
+import { Card, Descriptions, Button, Modal, Form, Select, Input, message, Spin, Row, Col, Statistic } from 'antd';
+import { EditOutlined, UserOutlined, BankOutlined, BookOutlined } from '@ant-design/icons';
+import { getMyInfo, editMyInfo, getStats } from '../api/user';
 import { getAllClasses } from '../api/clazz';
+import { getRole } from '../utils/auth';
 
 const roleMap: Record<string, string> = {
   ROLE_ADMIN: '管理员',
@@ -26,12 +27,21 @@ interface ClassOption {
   name: string;
 }
 
+interface StatsData {
+  userCount: number;
+  classCount: number;
+  departmentCount: number;
+}
+
 export default function Dashboard() {
   const [userInfo, setUserInfo] = useState<UserInfo | null>(null);
   const [loading, setLoading] = useState(true);
   const [modalOpen, setModalOpen] = useState(false);
   const [form] = Form.useForm();
   const [classOptions, setClassOptions] = useState<ClassOption[]>([]);
+  const [stats, setStats] = useState<StatsData | null>(null);
+
+  const isAdmin = getRole() === 'ROLE_ADMIN';
 
   const fetchInfo = async () => {
     setLoading(true);
@@ -49,7 +59,18 @@ export default function Dashboard() {
     } catch { /* handled */ }
   };
 
-  useEffect(() => { fetchInfo(); fetchClasses(); }, []);
+  const fetchStats = async () => {
+    try {
+      const res = await getStats();
+      setStats((res as any).data);
+    } catch { /* handled */ }
+  };
+
+  useEffect(() => {
+    fetchInfo();
+    fetchClasses();
+    if (isAdmin) fetchStats();
+  }, []);
 
   const classMap = new Map(classOptions.map(c => [c.id, c.name]));
 
@@ -76,6 +97,25 @@ export default function Dashboard() {
 
   return (
     <>
+      {isAdmin && stats && (
+        <Row gutter={16} style={{ marginBottom: 16 }}>
+          <Col span={8}>
+            <Card>
+              <Statistic title="用户总数" value={stats.userCount} prefix={<UserOutlined />} />
+            </Card>
+          </Col>
+          <Col span={8}>
+            <Card>
+              <Statistic title="院系总数" value={stats.departmentCount} prefix={<BankOutlined />} />
+            </Card>
+          </Col>
+          <Col span={8}>
+            <Card>
+              <Statistic title="班级总数" value={stats.classCount} prefix={<BookOutlined />} />
+            </Card>
+          </Col>
+        </Row>
+      )}
       <Card
         title="个人信息"
         extra={<Button type="link" icon={<EditOutlined />} onClick={handleEdit}>编辑</Button>}

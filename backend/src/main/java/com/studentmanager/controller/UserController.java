@@ -8,6 +8,8 @@ import com.studentmanager.dto.EditMeRequest;
 import com.studentmanager.dto.LoginRequest;
 import com.studentmanager.model.MyUser;
 import com.studentmanager.model.UserRole;
+import com.studentmanager.service.ClassService;
+import com.studentmanager.service.DepartmentService;
 import com.studentmanager.service.UserService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -16,6 +18,9 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.HashMap;
+import java.util.Map;
+
 @RestController
 @RequestMapping("/api/user")
 @RequiredArgsConstructor
@@ -23,6 +28,10 @@ public class UserController {
     private final UserService userService;
     private final JwtUtil jwtUtil;
     private final PasswordEncoder passwordEncoder;
+
+    // 统计用Beans
+    private final ClassService classService;
+    private final DepartmentService departmentService;
 
     @GetMapping("/list")
     public RequestResult<Page<MyUser>> getUserList(@RequestParam(defaultValue = "1") int page, @RequestParam(defaultValue = "10") int size) {
@@ -65,6 +74,20 @@ public class UserController {
         boolean res = userService.removeById(id);
         if (res) return RequestResult.success(null);
         return RequestResult.error("Error on delete userId: " + id);
+    }
+
+    /// ================================= 统计相关 ==================================== //
+
+    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
+    @GetMapping("/stats")
+    public RequestResult<Map<String, Long>> getStats() {
+        Map<String, Long> stats = new HashMap<>();
+
+        stats.put("userCount", userService.count());
+        stats.put("classCount", classService.count());
+        stats.put("departmentCount", departmentService.count());
+
+        return RequestResult.success(stats);
     }
 
     /// ================================= 个人信息 ==================================== //

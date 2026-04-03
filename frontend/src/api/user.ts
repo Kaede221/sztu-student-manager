@@ -40,3 +40,7 @@ export function getMyInfo() {
 export function editMyInfo(data: { gender?: string; phoneNumber?: string }) {
   return request.put('/user/me', data);
 }
+
+export function getStats() {
+  return request.get('/user/stats');
+}
