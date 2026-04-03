@@ -7,6 +7,10 @@ interface UserRecord {
   id: number;
   username: string;
   role: string;
+  number: string;
+  classId: number;
+  gender: string;
+  phoneNumber: string;
   status: boolean;
 }
 
@@ -71,6 +75,12 @@ export default function UserManage() {
       const map: Record<string, string> = { ROLE_ADMIN: '管理员', ROLE_TEACHER: '教师', ROLE_STUDENT: '学生' };
       return map[role] || role;
     }},
+    { title: '学工号', dataIndex: 'number', key: 'number', render: (v: string) => v || '-' },
+    { title: '性别', dataIndex: 'gender', key: 'gender', render: (g: string) => {
+      if (!g) return '-';
+      return g === 'MAN' ? '男' : '女';
+    }},
+    { title: '手机号', dataIndex: 'phoneNumber', key: 'phoneNumber', render: (v: string) => v || '-' },
     { title: '状态', dataIndex: 'status', key: 'status', render: (s: boolean) => s ? '启用' : '禁用' },
     {
       title: '操作', key: 'action', render: (_: unknown, record: UserRecord) => (
@@ -121,6 +131,21 @@ export default function UserManage() {
               { value: 'ROLE_TEACHER', label: '教师' },
               { value: 'ROLE_STUDENT', label: '学生' },
             ]} />
+          </Form.Item>
+          <Form.Item name="number" label="学工号">
+            <Input placeholder="学生填学号，教师填工号" />
+          </Form.Item>
+          <Form.Item name="classId" label="班级ID">
+            <Input type="number" placeholder="仅学生需要填写" />
+          </Form.Item>
+          <Form.Item name="gender" label="性别">
+            <Select allowClear options={[
+              { value: 'MAN', label: '男' },
+              { value: 'WOMAN', label: '女' },
+            ]} />
+          </Form.Item>
+          <Form.Item name="phoneNumber" label="手机号">
+            <Input />
           </Form.Item>
           <Form.Item name="status" label="状态" rules={[{ required: true, message: '请选择状态' }]}>
             <Select options={[

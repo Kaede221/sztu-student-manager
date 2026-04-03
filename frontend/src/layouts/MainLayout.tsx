@@ -2,7 +2,6 @@ import { useState } from 'react';
 import { Layout, Menu, Button, theme, Dropdown } from 'antd';
 import {
   UserOutlined,
-  TeamOutlined,
   BankOutlined,
   BookOutlined,
   HomeOutlined,
@@ -18,8 +17,6 @@ const { Header, Sider, Content } = Layout;
 const allMenuItems = [
   { key: '/', icon: <HomeOutlined />, label: '首页', roles: ['ROLE_ADMIN', 'ROLE_TEACHER', 'ROLE_STUDENT'] },
   { key: '/user', icon: <UserOutlined />, label: '用户管理', roles: ['ROLE_ADMIN'] },
-  { key: '/student', icon: <TeamOutlined />, label: '学生管理', roles: ['ROLE_ADMIN', 'ROLE_TEACHER'] },
-  { key: '/teacher', icon: <UserOutlined />, label: '教师管理', roles: ['ROLE_ADMIN'] },
   { key: '/department', icon: <BankOutlined />, label: '院系管理', roles: ['ROLE_ADMIN'] },
   { key: '/class', icon: <BookOutlined />, label: '班级管理', roles: ['ROLE_ADMIN'] },
 ];

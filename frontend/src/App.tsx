@@ -5,8 +5,6 @@ import Login from './pages/Login';
 import MainLayout from './layouts/MainLayout';
 import Dashboard from './pages/Dashboard';
 import UserManage from './pages/UserManage';
-import StudentManage from './pages/StudentManage';
-import TeacherManage from './pages/TeacherManage';
 import DepartmentManage from './pages/DepartmentManage';
 import ClassManage from './pages/ClassManage';
 import RoleGuard from './components/RoleGuard';
@@ -34,16 +32,6 @@ export default function App() {
             <Route path="user" element={
               <RoleGuard roles={['ROLE_ADMIN']}>
                 <UserManage />
-              </RoleGuard>
-            } />
-            <Route path="student" element={
-              <RoleGuard roles={['ROLE_ADMIN', 'ROLE_TEACHER']}>
-                <StudentManage />
-              </RoleGuard>
-            } />
-            <Route path="teacher" element={
-              <RoleGuard roles={['ROLE_ADMIN']}>
-                <TeacherManage />
               </RoleGuard>
             } />
             <Route path="department" element={
