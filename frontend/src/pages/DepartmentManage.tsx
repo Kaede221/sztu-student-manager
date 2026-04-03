@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { Table, Button, Modal, Form, Input, Space, Popconfirm, message } from 'antd';
 import { PlusOutlined } from '@ant-design/icons';
 import { getDepartmentList, addDepartment, editDepartment, deleteDepartment } from '../api/department';
+import { getRole } from '../utils/auth';
 
 interface DepartmentRecord {
   id: number;
@@ -18,6 +19,8 @@ export default function DepartmentManage() {
   const [modalOpen, setModalOpen] = useState(false);
   const [editing, setEditing] = useState<DepartmentRecord | null>(null);
   const [form] = Form.useForm();
+
+  const isAdmin = getRole() === 'ROLE_ADMIN';
 
   const fetchData = async () => {
     setLoading(true);
@@ -67,7 +70,7 @@ export default function DepartmentManage() {
     { title: 'ID', dataIndex: 'id', key: 'id', width: 80 },
     { title: '院系名称', dataIndex: 'name', key: 'name' },
     { title: '描述', dataIndex: 'description', key: 'description' },
-    {
+    ...(isAdmin ? [{
       title: '操作', key: 'action', render: (_: unknown, record: DepartmentRecord) => (
         <Space>
           <Button type="link" onClick={() => handleEdit(record)}>编辑</Button>
@@ -76,14 +79,16 @@ export default function DepartmentManage() {
           </Popconfirm>
         </Space>
       ),
-    },
+    }] : []),
   ];
 
   return (
     <>
-      <div style={{ marginBottom: 16 }}>
-        <Button type="primary" icon={<PlusOutlined />} onClick={handleAdd}>添加院系</Button>
-      </div>
+      {isAdmin && (
+        <div style={{ marginBottom: 16 }}>
+          <Button type="primary" icon={<PlusOutlined />} onClick={handleAdd}>添加院系</Button>
+        </div>
+      )}
       <Table
         rowKey="id"
         columns={columns}

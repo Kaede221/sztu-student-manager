@@ -3,6 +3,7 @@ import { Table, Button, Modal, Form, Input, Select, Space, Popconfirm, message }
 import { PlusOutlined } from '@ant-design/icons';
 import { getUserList, addUser, editUser, deleteUser } from '../api/user';
 import { getAllClasses } from '../api/clazz';
+import { getRole } from '../utils/auth';
 
 interface UserRecord {
   id: number;
@@ -30,6 +31,8 @@ export default function UserManage() {
   const [editing, setEditing] = useState<UserRecord | null>(null);
   const [form] = Form.useForm();
   const [classOptions, setClassOptions] = useState<ClassOption[]>([]);
+
+  const isAdmin = getRole() === 'ROLE_ADMIN';
 
   const fetchData = async () => {
     setLoading(true);
@@ -100,7 +103,7 @@ export default function UserManage() {
     }},
     { title: '手机号', dataIndex: 'phoneNumber', key: 'phoneNumber', render: (v: string) => v || '-' },
     { title: '状态', dataIndex: 'status', key: 'status', render: (s: boolean) => s ? '启用' : '禁用' },
-    {
+    ...(isAdmin ? [{
       title: '操作', key: 'action', render: (_: unknown, record: UserRecord) => (
         <Space>
           <Button type="link" onClick={() => handleEdit(record)}>编辑</Button>
@@ -109,14 +112,16 @@ export default function UserManage() {
           </Popconfirm>
         </Space>
       ),
-    },
+    }] : []),
   ];
 
   return (
     <>
-      <div style={{ marginBottom: 16 }}>
-        <Button type="primary" icon={<PlusOutlined />} onClick={handleAdd}>添加用户</Button>
-      </div>
+      {isAdmin && (
+        <div style={{ marginBottom: 16 }}>
+          <Button type="primary" icon={<PlusOutlined />} onClick={handleAdd}>添加用户</Button>
+        </div>
+      )}
       <Table
         rowKey="id"
         columns={columns}

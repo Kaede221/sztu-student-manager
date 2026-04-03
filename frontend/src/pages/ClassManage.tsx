@@ -3,6 +3,7 @@ import { Table, Button, Modal, Form, Input, Select, Space, Popconfirm, message }
 import { PlusOutlined } from '@ant-design/icons';
 import { getClassList, addClass, editClass, deleteClass } from '../api/clazz';
 import { getAllDepartments } from '../api/department';
+import { getRole } from '../utils/auth';
 
 interface ClassRecord {
   id: number;
@@ -26,6 +27,8 @@ export default function ClassManage() {
   const [editing, setEditing] = useState<ClassRecord | null>(null);
   const [form] = Form.useForm();
   const [deptOptions, setDeptOptions] = useState<DeptOption[]>([]);
+
+  const isAdmin = getRole() === 'ROLE_ADMIN';
 
   const fetchData = async () => {
     setLoading(true);
@@ -86,7 +89,7 @@ export default function ClassManage() {
     { title: '班级名称', dataIndex: 'name', key: 'name' },
     { title: '所属院系', dataIndex: 'departmentId', key: 'departmentId', render: (id: number) => deptMap.get(id) || id },
     { title: '年级', dataIndex: 'grade', key: 'grade' },
-    {
+    ...(isAdmin ? [{
       title: '操作', key: 'action', render: (_: unknown, record: ClassRecord) => (
         <Space>
           <Button type="link" onClick={() => handleEdit(record)}>编辑</Button>
@@ -95,14 +98,16 @@ export default function ClassManage() {
           </Popconfirm>
         </Space>
       ),
-    },
+    }] : []),
   ];
 
   return (
     <>
-      <div style={{ marginBottom: 16 }}>
-        <Button type="primary" icon={<PlusOutlined />} onClick={handleAdd}>添加班级</Button>
-      </div>
+      {isAdmin && (
+        <div style={{ marginBottom: 16 }}>
+          <Button type="primary" icon={<PlusOutlined />} onClick={handleAdd}>添加班级</Button>
+        </div>
+      )}
       <Table
         rowKey="id"
         columns={columns}

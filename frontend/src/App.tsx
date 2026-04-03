@@ -30,17 +30,17 @@ export default function App() {
           }>
             <Route index element={<Dashboard />} />
             <Route path="user" element={
-              <RoleGuard roles={['ROLE_ADMIN']}>
+              <RoleGuard roles={['ROLE_ADMIN', 'ROLE_TEACHER']}>
                 <UserManage />
               </RoleGuard>
             } />
             <Route path="department" element={
-              <RoleGuard roles={['ROLE_ADMIN']}>
+              <RoleGuard roles={['ROLE_ADMIN', 'ROLE_TEACHER']}>
                 <DepartmentManage />
               </RoleGuard>
             } />
             <Route path="class" element={
-              <RoleGuard roles={['ROLE_ADMIN']}>
+              <RoleGuard roles={['ROLE_ADMIN', 'ROLE_TEACHER']}>
                 <ClassManage />
               </RoleGuard>
             } />

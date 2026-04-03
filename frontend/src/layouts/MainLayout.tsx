@@ -16,9 +16,9 @@ const { Header, Sider, Content } = Layout;
 
 const allMenuItems = [
   { key: '/', icon: <HomeOutlined />, label: '首页', roles: ['ROLE_ADMIN', 'ROLE_TEACHER', 'ROLE_STUDENT'] },
-  { key: '/user', icon: <UserOutlined />, label: '用户管理', roles: ['ROLE_ADMIN'] },
-  { key: '/department', icon: <BankOutlined />, label: '院系管理', roles: ['ROLE_ADMIN'] },
-  { key: '/class', icon: <BookOutlined />, label: '班级管理', roles: ['ROLE_ADMIN'] },
+  { key: '/user', icon: <UserOutlined />, label: '用户管理', roles: ['ROLE_ADMIN', 'ROLE_TEACHER'] },
+  { key: '/department', icon: <BankOutlined />, label: '院系管理', roles: ['ROLE_ADMIN', 'ROLE_TEACHER'] },
+  { key: '/class', icon: <BookOutlined />, label: '班级管理', roles: ['ROLE_ADMIN', 'ROLE_TEACHER'] },
 ];
 
 export default function MainLayout() {
