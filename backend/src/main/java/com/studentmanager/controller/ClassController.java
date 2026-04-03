@@ -23,6 +23,11 @@ public class ClassController {
         return RequestResult.success(classPage);
     }
 
+    @GetMapping("/listAll")
+    public RequestResult<List<MyClass>> getAllClassesWithoutPage() {
+        return RequestResult.success(classService.list());
+    }
+
     @GetMapping("/list/{departmentId}")
     public RequestResult<Page<MyClass>> getClassesFromDepartment(@PathVariable Long departmentId, @RequestParam(defaultValue = "1") int page, @RequestParam(defaultValue = "10") int size) {
         LambdaQueryWrapper<MyClass> wrapper = new LambdaQueryWrapper<>();

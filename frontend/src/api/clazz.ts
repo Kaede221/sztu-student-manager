@@ -4,6 +4,10 @@ export function getClassList(page = 1, size = 10) {
   return request.get('/class/list', { params: { page, size } });
 }
 
+export function getAllClasses() {
+  return request.get('/class/listAll');
+}
+
 export function getClassListByDepartment(departmentId: number, page = 1, size = 10) {
   return request.get(`/class/list/${departmentId}`, { params: { page, size } });
 }

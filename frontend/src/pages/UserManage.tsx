@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { Table, Button, Modal, Form, Input, Select, Space, Popconfirm, message } from 'antd';
 import { PlusOutlined } from '@ant-design/icons';
 import { getUserList, addUser, editUser, deleteUser } from '../api/user';
+import { getAllClasses } from '../api/clazz';
 
 interface UserRecord {
   id: number;
@@ -14,6 +15,11 @@ interface UserRecord {
   status: boolean;
 }
 
+interface ClassOption {
+  id: number;
+  name: string;
+}
+
 export default function UserManage() {
   const [data, setData] = useState<UserRecord[]>([]);
   const [total, setTotal] = useState(0);
@@ -23,6 +29,7 @@ export default function UserManage() {
   const [modalOpen, setModalOpen] = useState(false);
   const [editing, setEditing] = useState<UserRecord | null>(null);
   const [form] = Form.useForm();
+  const [classOptions, setClassOptions] = useState<ClassOption[]>([]);
 
   const fetchData = async () => {
     setLoading(true);
@@ -35,7 +42,17 @@ export default function UserManage() {
     setLoading(false);
   };
 
+  const fetchClasses = async () => {
+    try {
+      const res = await getAllClasses();
+      setClassOptions((res as any).data);
+    } catch { /* handled */ }
+  };
+
   useEffect(() => { fetchData(); }, [page, pageSize]);
+  useEffect(() => { fetchClasses(); }, []);
+
+  const classMap = new Map(classOptions.map(c => [c.id, c.name]));
 
   const handleAdd = () => {
     setEditing(null);
@@ -76,6 +93,7 @@ export default function UserManage() {
       return map[role] || role;
     }},
     { title: '学工号', dataIndex: 'number', key: 'number', render: (v: string) => v || '-' },
+    { title: '班级', dataIndex: 'classId', key: 'classId', render: (id: number) => classMap.get(id) || '-' },
     { title: '性别', dataIndex: 'gender', key: 'gender', render: (g: string) => {
       if (!g) return '-';
       return g === 'MAN' ? '男' : '女';
@@ -135,8 +153,12 @@ export default function UserManage() {
           <Form.Item name="number" label="学工号">
             <Input placeholder="学生填学号，教师填工号" />
           </Form.Item>
-          <Form.Item name="classId" label="班级ID">
-            <Input type="number" placeholder="仅学生需要填写" />
+          <Form.Item name="classId" label="班级">
+            <Select
+              allowClear
+              placeholder="仅学生需要选择"
+              options={classOptions.map(c => ({ value: c.id, label: c.name }))}
+            />
           </Form.Item>
           <Form.Item name="gender" label="性别">
             <Select allowClear options={[
