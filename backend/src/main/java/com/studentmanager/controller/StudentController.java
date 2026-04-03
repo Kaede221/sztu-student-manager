@@ -1,13 +1,12 @@
 package com.studentmanager.controller;
 
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.studentmanager.common.RequestResult;
 import com.studentmanager.model.MyStudent;
 import com.studentmanager.service.StudentService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 @RestController
 @RequestMapping("/api/student")
@@ -16,8 +15,9 @@ public class StudentController {
     private final StudentService studentService;
 
     @GetMapping("/list")
-    public RequestResult<List<MyStudent>> getAllStudents() {
-        return RequestResult.success(studentService.list());
+    public RequestResult<Page<MyStudent>> getAllStudents(@RequestParam(defaultValue = "1") int page, @RequestParam(defaultValue = "10") int size) {
+        Page<MyStudent> studentPage = studentService.page(new Page<>(page, size));
+        return RequestResult.success(studentPage);
     }
 
     @GetMapping("/{id}")

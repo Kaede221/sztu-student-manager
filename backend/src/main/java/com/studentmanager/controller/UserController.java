@@ -1,6 +1,7 @@
 package com.studentmanager.controller;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.studentmanager.common.JwtUtil;
 import com.studentmanager.common.RequestResult;
 import com.studentmanager.dto.LoginRequest;
@@ -12,8 +13,6 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
-
 @RestController
 @RequestMapping("/api/user")
 @RequiredArgsConstructor
@@ -23,9 +22,9 @@ public class UserController {
     private final PasswordEncoder passwordEncoder;
 
     @GetMapping("/list")
-    public RequestResult<List<MyUser>> getUserList() {
-        List<MyUser> users = userService.list();
-        return RequestResult.success(users);
+    public RequestResult<Page<MyUser>> getUserList(@RequestParam(defaultValue = "1") int page, @RequestParam(defaultValue = "10") int size) {
+        Page<MyUser> userPage = userService.page(new Page<>(page, size));
+        return RequestResult.success(userPage);
     }
 
     @GetMapping("/{id}")

@@ -1,13 +1,12 @@
 package com.studentmanager.controller;
 
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.studentmanager.common.RequestResult;
 import com.studentmanager.model.MyDepartment;
 import com.studentmanager.service.DepartmentService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 @RestController
 @RequestMapping("/api/department")
@@ -16,8 +15,9 @@ public class DepartmentController {
     private final DepartmentService departmentService;
 
     @GetMapping("/list")
-    public RequestResult<List<MyDepartment>> getAllDepartments() {
-        return RequestResult.success(departmentService.list());
+    public RequestResult<Page<MyDepartment>> getAllDepartments(@RequestParam(defaultValue = "1") int page, @RequestParam(defaultValue = "10") int size) {
+        Page<MyDepartment> departmentPage = departmentService.page(new Page<>(page, size));
+        return RequestResult.success(departmentPage);
     }
 
     @PreAuthorize("hasAnyAuthority('ROLE_ADMIN')")

@@ -1,6 +1,7 @@
 package com.studentmanager.controller;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.studentmanager.common.RequestResult;
 import com.studentmanager.model.MyClass;
 import com.studentmanager.service.ClassService;
@@ -17,17 +18,17 @@ public class ClassController {
     private final ClassService classService;
 
     @GetMapping("/list")
-    public RequestResult<List<MyClass>> getAllClasses() {
-        return RequestResult.success(classService.list());
+    public RequestResult<Page<MyClass>> getAllClasses(@RequestParam(defaultValue = "1") int page, @RequestParam(defaultValue = "10") int size) {
+        Page<MyClass> classPage = classService.page(new Page<>(page, size));
+        return RequestResult.success(classPage);
     }
 
     @GetMapping("/list/{departmentId}")
-    public RequestResult<List<MyClass>> getClassesFromDepartment(@PathVariable Long departmentId) {
+    public RequestResult<Page<MyClass>> getClassesFromDepartment(@PathVariable Long departmentId, @RequestParam(defaultValue = "1") int page, @RequestParam(defaultValue = "10") int size) {
         LambdaQueryWrapper<MyClass> wrapper = new LambdaQueryWrapper<>();
         wrapper.eq(MyClass::getDepartmentId, departmentId);
-        List<MyClass> classes = classService.list(wrapper);
-
-        return RequestResult.success(classes);
+        Page<MyClass> classPage = classService.page(new Page<>(page, size), wrapper);
+        return RequestResult.success(classPage);
     }
 
     @PreAuthorize("hasAnyAuthority('ROLE_ADMIN')")
