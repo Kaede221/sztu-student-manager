@@ -28,6 +28,22 @@ public class MyUser {
      */
     private UserRole role;
     /**
+     * 学工编号
+     */
+    private String number;
+    /**
+     * 班级 ID
+     */
+    private Long classId;
+    /**
+     * 用户性别
+     */
+    private String gender;
+    /**
+     * 用户手机号
+     */
+    private String phoneNumber;
+    /**
      * 账号状态 是否禁用
      */
     private boolean status;
