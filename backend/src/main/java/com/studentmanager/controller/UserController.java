@@ -5,8 +5,10 @@ import com.studentmanager.common.JwtUtil;
 import com.studentmanager.common.RequestResult;
 import com.studentmanager.dto.LoginRequest;
 import com.studentmanager.model.MyUser;
+import com.studentmanager.model.UserRole;
 import com.studentmanager.service.UserService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -17,6 +19,7 @@ import java.util.List;
 public class UserController {
     private final UserService userService;
     private final JwtUtil jwtUtil;
+    private final PasswordEncoder passwordEncoder;
 
     @GetMapping("/list")
     public RequestResult<List<MyUser>> getUserList() {
@@ -32,6 +35,8 @@ public class UserController {
 
     @PostMapping
     public RequestResult<String> addUser(@RequestBody MyUser user) {
+        // 处理密码
+        user.setPassword(passwordEncoder.encode(user.getPassword()));
         boolean res = userService.save(user);
         if (res) {
             return RequestResult.success(null);
@@ -41,6 +46,7 @@ public class UserController {
 
     @PutMapping
     public RequestResult<String> editUser(@RequestBody MyUser user) {
+        user.setPassword(passwordEncoder.encode(user.getPassword()));
         boolean res = userService.updateById(user);
         if (res) {
             return RequestResult.success(null);
@@ -57,6 +63,26 @@ public class UserController {
 
     ///  ================================= 登录相关 ================================== //
 
+    @PostMapping("/register")
+    public RequestResult<String> userRegister(@RequestBody LoginRequest request) {
+        LambdaQueryWrapper<MyUser> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(MyUser::getUsername, request.getUsername());
+
+        MyUser user = userService.getOne(wrapper);
+
+        if (user == null) {
+            user = new MyUser();
+            user.setRole(UserRole.ROLE_STUDENT);
+            user.setPassword(passwordEncoder.encode(request.getPassword()));
+            user.setUsername(request.getUsername());
+            user.setStatus(true);
+
+            userService.save(user);
+            return RequestResult.success("Success");
+        }
+        return RequestResult.error("用户已存在");
+    }
+
     @PostMapping("/login")
     public RequestResult<String> userLogin(@RequestBody LoginRequest loginRequest) {
         LambdaQueryWrapper<MyUser> wrapper = new LambdaQueryWrapper<>();
@@ -64,7 +90,7 @@ public class UserController {
 
         MyUser user = userService.getOne(wrapper);
 
-        if (user != null && user.getPassword().equals(loginRequest.getPassword())) {
+        if (user != null && passwordEncoder.matches(loginRequest.getPassword(), user.getPassword())) {
             String token = jwtUtil.generateToken(user.getUsername(), user.getRole().name());
             return RequestResult.success(token);
         }
