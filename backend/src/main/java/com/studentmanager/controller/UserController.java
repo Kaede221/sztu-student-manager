@@ -9,6 +9,7 @@ import com.studentmanager.dto.LoginRequest;
 import com.studentmanager.model.MyUser;
 import com.studentmanager.model.UserRole;
 import com.studentmanager.service.UserService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
@@ -98,7 +99,7 @@ public class UserController {
     ///  ================================= 登录相关 ================================== //
 
     @PostMapping("/register")
-    public RequestResult<String> userRegister(@RequestBody LoginRequest request) {
+    public RequestResult<String> userRegister(@Valid @RequestBody LoginRequest request) {
         LambdaQueryWrapper<MyUser> wrapper = new LambdaQueryWrapper<>();
         wrapper.eq(MyUser::getUsername, request.getUsername());
 
@@ -118,7 +119,7 @@ public class UserController {
     }
 
     @PostMapping("/login")
-    public RequestResult<String> userLogin(@RequestBody LoginRequest loginRequest) {
+    public RequestResult<String> userLogin(@Valid @RequestBody LoginRequest loginRequest) {
         LambdaQueryWrapper<MyUser> wrapper = new LambdaQueryWrapper<>();
         wrapper.eq(MyUser::getUsername, loginRequest.getUsername());
 
