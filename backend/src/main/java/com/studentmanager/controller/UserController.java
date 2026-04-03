@@ -1,5 +1,6 @@
 package com.studentmanager.controller;
 
+import com.studentmanager.common.RequestResult;
 import com.studentmanager.model.MyUser;
 import com.studentmanager.service.UserService;
 import lombok.RequiredArgsConstructor;
@@ -14,31 +15,38 @@ public class UserController {
     private final UserService userService;
 
     @GetMapping("/list")
-    public List<MyUser> getUserList() {
+    public RequestResult<List<MyUser>> getUserList() {
         List<MyUser> users = userService.list();
-        return users.stream().toList();
+        return RequestResult.success(users);
     }
 
     @GetMapping("/{id}")
-    public MyUser getUserById(@PathVariable Long id) {
-        return userService.getById(id);
+    public RequestResult<MyUser> getUserById(@PathVariable Long id) {
+        return RequestResult.success(userService.getById(id));
     }
 
     @PostMapping
-    public String addUser(@RequestBody MyUser user) {
-        userService.save(user);
-        return "Success";
+    public RequestResult<String> addUser(@RequestBody MyUser user) {
+        boolean res = userService.save(user);
+        if (res) {
+            return RequestResult.success(null);
+        }
+        return RequestResult.error("Error on add user: " + user.toString());
     }
 
     @PutMapping
-    public String editUser(@RequestBody MyUser user) {
-        userService.updateById(user);
-        return "Success";
+    public RequestResult<String> editUser(@RequestBody MyUser user) {
+        boolean res = userService.updateById(user);
+        if (res) {
+            return RequestResult.success(null);
+        }
+        return RequestResult.error("Error on update user: " + user.toString());
     }
 
     @DeleteMapping("/{id}")
-    public String deleteUserById(@PathVariable Long id) {
-        userService.removeById(id);
-        return "Success";
+    public RequestResult<String> deleteUserById(@PathVariable Long id) {
+        boolean res = userService.removeById(id);
+        if (res) return RequestResult.success(null);
+        return RequestResult.error("Error on delete userId: " + id);
     }
 }
