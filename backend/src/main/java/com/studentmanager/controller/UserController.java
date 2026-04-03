@@ -8,6 +8,7 @@ import com.studentmanager.model.MyUser;
 import com.studentmanager.model.UserRole;
 import com.studentmanager.service.UserService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
@@ -33,6 +34,7 @@ public class UserController {
         return user != null ? RequestResult.success(user) : RequestResult.error("User is not found");
     }
 
+    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
     @PostMapping
     public RequestResult<String> addUser(@RequestBody MyUser user) {
         // 处理密码
@@ -44,6 +46,7 @@ public class UserController {
         return RequestResult.error("Error on add user: " + user.toString());
     }
 
+    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
     @PutMapping
     public RequestResult<String> editUser(@RequestBody MyUser user) {
         user.setPassword(passwordEncoder.encode(user.getPassword()));
@@ -54,6 +57,7 @@ public class UserController {
         return RequestResult.error("Error on update user: " + user.toString());
     }
 
+    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
     @DeleteMapping("/{id}")
     public RequestResult<String> deleteUserById(@PathVariable Long id) {
         boolean res = userService.removeById(id);

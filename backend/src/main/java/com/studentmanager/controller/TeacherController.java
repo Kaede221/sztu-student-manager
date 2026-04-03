@@ -4,6 +4,7 @@ import com.studentmanager.common.RequestResult;
 import com.studentmanager.model.MyTeacher;
 import com.studentmanager.service.TeacherService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -25,18 +26,21 @@ public class TeacherController {
         return teacher != null ? RequestResult.success(teacher) : RequestResult.error("Teacher is not found");
     }
 
+    @PreAuthorize("hasAnyAuthority('ROLE_ADMIN')")
     @PostMapping
     public RequestResult<String> addNewTeacher(@RequestBody MyTeacher teacher) {
         boolean res = teacherService.save(teacher);
         return res ? RequestResult.success(null) : RequestResult.error("Err on add teacher: " + teacher.toString());
     }
 
+    @PreAuthorize("hasAnyAuthority('ROLE_ADMIN')")
     @PutMapping
     public RequestResult<String> editTeacher(@RequestBody MyTeacher teacher) {
         boolean res = teacherService.updateById(teacher);
         return res ? RequestResult.success(null) : RequestResult.error("Err on edit teacher: " + teacher.toString());
     }
 
+    @PreAuthorize("hasAnyAuthority('ROLE_ADMIN')")
     @DeleteMapping("/{id}")
     public RequestResult<String> deleteTeacherById(@PathVariable Long id) {
         boolean res = teacherService.removeById(id);

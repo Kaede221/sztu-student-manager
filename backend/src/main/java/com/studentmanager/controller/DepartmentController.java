@@ -4,6 +4,7 @@ import com.studentmanager.common.RequestResult;
 import com.studentmanager.model.MyDepartment;
 import com.studentmanager.service.DepartmentService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -19,18 +20,21 @@ public class DepartmentController {
         return RequestResult.success(departmentService.list());
     }
 
+    @PreAuthorize("hasAnyAuthority('ROLE_ADMIN')")
     @PostMapping
     public RequestResult<String> addDepartment(@RequestBody MyDepartment myDepartment) {
         boolean res = departmentService.save(myDepartment);
         return res ? RequestResult.success(null) : RequestResult.error("Err on add department: " + myDepartment.toString());
     }
 
+    @PreAuthorize("hasAnyAuthority('ROLE_ADMIN')")
     @PutMapping
     public RequestResult<String> editDepartment(@RequestBody MyDepartment myDepartment) {
         boolean res = departmentService.updateById(myDepartment);
         return res ? RequestResult.success(null) : RequestResult.error("Err on edit department: " + myDepartment.toString());
     }
 
+    @PreAuthorize("hasAnyAuthority('ROLE_ADMIN')")
     @DeleteMapping("/{id}")
     public RequestResult<String> deleteDepartmentByid(@PathVariable Long id) {
         boolean res = departmentService.removeById(id);
