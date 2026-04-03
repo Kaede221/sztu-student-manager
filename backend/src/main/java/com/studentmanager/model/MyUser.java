@@ -3,6 +3,7 @@ package com.studentmanager.model;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;
 
 @Data
@@ -20,6 +21,7 @@ public class MyUser {
     /**
      * 用户密码
      */
+    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     private String password;
     /**
      * 用户角色 ADMIN | TEACHER | STUDENT
