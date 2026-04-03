@@ -1,12 +1,17 @@
 package com.studentmanager.model;
 
+import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableId;
+import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.Data;
 
 @Data
+@TableName("my_user")
 public class MyUser {
     /**
      * 唯一 ID
      */
+    @TableId(type = IdType.AUTO)
     private Long id;
     /**
      * 用户名 唯一字段
