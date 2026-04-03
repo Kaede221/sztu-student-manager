@@ -4,12 +4,14 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.studentmanager.common.JwtUtil;
 import com.studentmanager.common.RequestResult;
+import com.studentmanager.dto.EditMeRequest;
 import com.studentmanager.dto.LoginRequest;
 import com.studentmanager.model.MyUser;
 import com.studentmanager.model.UserRole;
 import com.studentmanager.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
@@ -42,7 +44,7 @@ public class UserController {
         if (res) {
             return RequestResult.success(null);
         }
-        return RequestResult.error("Error on add user: " + user.toString());
+        return RequestResult.error("Error on add user: " + user);
     }
 
     @PreAuthorize("hasAuthority('ROLE_ADMIN')")
@@ -53,7 +55,7 @@ public class UserController {
         if (res) {
             return RequestResult.success(null);
         }
-        return RequestResult.error("Error on update user: " + user.toString());
+        return RequestResult.error("Error on update user: " + user);
     }
 
     @PreAuthorize("hasAuthority('ROLE_ADMIN')")
@@ -62,6 +64,35 @@ public class UserController {
         boolean res = userService.removeById(id);
         if (res) return RequestResult.success(null);
         return RequestResult.error("Error on delete userId: " + id);
+    }
+
+    /// ================================= 个人信息 ==================================== //
+
+    @GetMapping("/me")
+    public RequestResult<MyUser> getMyInfo(Authentication authentication) {
+        String username = authentication.getName();
+
+        // 查询用户
+        LambdaQueryWrapper<MyUser> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(MyUser::getUsername, username);
+        MyUser user = userService.getOne(wrapper);
+        return RequestResult.success(user);
+    }
+
+    @PutMapping("/me")
+    public RequestResult<String> editMyInfo(Authentication authentication, @RequestBody EditMeRequest editMeRequest) {
+        String username = authentication.getName();
+        LambdaQueryWrapper<MyUser> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(MyUser::getUsername, username);
+        MyUser user = userService.getOne(wrapper);
+
+        if (editMeRequest.getGender() != null)
+            user.setGender(editMeRequest.getGender());
+        if (editMeRequest.getPhoneNumber() != null)
+            user.setPhoneNumber(editMeRequest.getPhoneNumber());
+
+        boolean res = userService.updateById(user);
+        return res ? RequestResult.success(null) : RequestResult.error("Err on Edit Your Profile");
     }
 
     ///  ================================= 登录相关 ================================== //

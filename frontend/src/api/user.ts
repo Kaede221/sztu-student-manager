@@ -32,3 +32,11 @@ export function editUser(data: Record<string, unknown>) {
 export function deleteUser(id: number) {
   return request.delete(`/user/${id}`);
 }
+
+export function getMyInfo() {
+  return request.get('/user/me');
+}
+
+export function editMyInfo(data: { gender?: string; phoneNumber?: string }) {
+  return request.put('/user/me', data);
+}
