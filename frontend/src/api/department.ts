@@ -4,6 +4,10 @@ export function getDepartmentList(page = 1, size = 10) {
   return request.get('/department/list', { params: { page, size } });
 }
 
+export function getAllDepartments() {
+  return request.get('/department/listAll');
+}
+
 export function addDepartment(data: Record<string, unknown>) {
   return request.post('/department', data);
 }

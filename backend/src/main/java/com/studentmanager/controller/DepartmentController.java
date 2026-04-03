@@ -8,6 +8,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/api/department")
 @RequiredArgsConstructor
@@ -18,6 +20,11 @@ public class DepartmentController {
     public RequestResult<Page<MyDepartment>> getAllDepartments(@RequestParam(defaultValue = "1") int page, @RequestParam(defaultValue = "10") int size) {
         Page<MyDepartment> departmentPage = departmentService.page(new Page<>(page, size));
         return RequestResult.success(departmentPage);
+    }
+
+    @GetMapping("/listAll")
+    public RequestResult<List<MyDepartment>> getAllDepartmentWithoutPage() {
+        return RequestResult.success(departmentService.list());
     }
 
     @PreAuthorize("hasAnyAuthority('ROLE_ADMIN')")

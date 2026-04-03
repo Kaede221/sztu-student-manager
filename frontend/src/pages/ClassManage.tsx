@@ -1,13 +1,19 @@
 import { useEffect, useState } from 'react';
-import { Table, Button, Modal, Form, Input, Space, Popconfirm, message } from 'antd';
+import { Table, Button, Modal, Form, Input, Select, Space, Popconfirm, message } from 'antd';
 import { PlusOutlined } from '@ant-design/icons';
 import { getClassList, addClass, editClass, deleteClass } from '../api/clazz';
+import { getAllDepartments } from '../api/department';
 
 interface ClassRecord {
   id: number;
   departmentId: number;
   name: string;
   grade: number;
+}
+
+interface DeptOption {
+  id: number;
+  name: string;
 }
 
 export default function ClassManage() {
@@ -19,6 +25,7 @@ export default function ClassManage() {
   const [modalOpen, setModalOpen] = useState(false);
   const [editing, setEditing] = useState<ClassRecord | null>(null);
   const [form] = Form.useForm();
+  const [deptOptions, setDeptOptions] = useState<DeptOption[]>([]);
 
   const fetchData = async () => {
     setLoading(true);
@@ -31,7 +38,17 @@ export default function ClassManage() {
     setLoading(false);
   };
 
+  const fetchDepartments = async () => {
+    try {
+      const res = await getAllDepartments();
+      setDeptOptions((res as any).data);
+    } catch { /* handled */ }
+  };
+
   useEffect(() => { fetchData(); }, [page, pageSize]);
+  useEffect(() => { fetchDepartments(); }, []);
+
+  const deptMap = new Map(deptOptions.map(d => [d.id, d.name]));
 
   const handleAdd = () => {
     setEditing(null);
@@ -67,7 +84,7 @@ export default function ClassManage() {
   const columns = [
     { title: 'ID', dataIndex: 'id', key: 'id', width: 80 },
     { title: '班级名称', dataIndex: 'name', key: 'name' },
-    { title: '院系ID', dataIndex: 'departmentId', key: 'departmentId' },
+    { title: '所属院系', dataIndex: 'departmentId', key: 'departmentId', render: (id: number) => deptMap.get(id) || id },
     { title: '年级', dataIndex: 'grade', key: 'grade' },
     {
       title: '操作', key: 'action', render: (_: unknown, record: ClassRecord) => (
@@ -109,8 +126,11 @@ export default function ClassManage() {
           <Form.Item name="name" label="班级名称" rules={[{ required: true, message: '请输入班级名称' }]}>
             <Input />
           </Form.Item>
-          <Form.Item name="departmentId" label="院系ID" rules={[{ required: true, message: '请输入院系ID' }]}>
-            <Input type="number" />
+          <Form.Item name="departmentId" label="所属院系" rules={[{ required: true, message: '请选择院系' }]}>
+            <Select
+              placeholder="请选择院系"
+              options={deptOptions.map(d => ({ value: d.id, label: d.name }))}
+            />
           </Form.Item>
           <Form.Item name="grade" label="年级" rules={[{ required: true, message: '请输入年级' }]}>
             <Input type="number" placeholder="例如: 2024" />
