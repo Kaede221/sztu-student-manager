@@ -8,6 +8,9 @@ import {
   MenuFoldOutlined,
   MenuUnfoldOutlined,
   LogoutOutlined,
+  ReadOutlined,
+  FormOutlined,
+  TrophyOutlined,
 } from '@ant-design/icons';
 import { Outlet, useNavigate, useLocation } from 'react-router-dom';
 import { getUsername, getRole, removeToken } from '../utils/auth';
@@ -19,6 +22,9 @@ const allMenuItems = [
   { key: '/user', icon: <UserOutlined />, label: '用户管理', roles: ['ROLE_ADMIN', 'ROLE_TEACHER'] },
   { key: '/department', icon: <BankOutlined />, label: '院系管理', roles: ['ROLE_ADMIN', 'ROLE_TEACHER'] },
   { key: '/class', icon: <BookOutlined />, label: '班级管理', roles: ['ROLE_ADMIN', 'ROLE_TEACHER'] },
+  { key: '/course', icon: <ReadOutlined />, label: '课程管理', roles: ['ROLE_ADMIN', 'ROLE_TEACHER'] },
+  { key: '/enrollment', icon: <FormOutlined />, label: '选课中心', roles: ['ROLE_STUDENT'] },
+  { key: '/score', icon: <TrophyOutlined />, label: '成绩查询', roles: ['ROLE_ADMIN', 'ROLE_TEACHER', 'ROLE_STUDENT'] },
 ];
 
 export default function MainLayout() {
