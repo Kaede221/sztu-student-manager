@@ -54,3 +54,7 @@ export function editMyInfo(data: { gender?: string; phoneNumber?: string }) {
 export function getStats() {
   return request.get('/user/stats');
 }
+
+export function changePassword(data: { oldPassword: string; newPassword: string }) {
+  return request.put('/user/password', data);
+}
