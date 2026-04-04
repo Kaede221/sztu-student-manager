@@ -5,12 +5,13 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.studentmanager.common.JwtUtil;
 import com.studentmanager.common.RequestResult;
 import com.studentmanager.dto.EditMeRequest;
+import com.studentmanager.dto.EditPasswordRequest;
 import com.studentmanager.dto.LoginRequest;
+import com.studentmanager.model.EnrollmentStatus;
+import com.studentmanager.model.MyEnrollment;
 import com.studentmanager.model.MyUser;
 import com.studentmanager.model.UserRole;
-import com.studentmanager.service.ClassService;
-import com.studentmanager.service.DepartmentService;
-import com.studentmanager.service.UserService;
+import com.studentmanager.service.*;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -32,6 +33,8 @@ public class UserController {
     // 统计用Beans
     private final ClassService classService;
     private final DepartmentService departmentService;
+    private final CourseService courseService;
+    private final EnrollmentService enrollmentService;
 
     @GetMapping("/list")
     public RequestResult<Page<MyUser>> getUserList(
@@ -108,6 +111,23 @@ public class UserController {
         stats.put("userCount", userService.count());
         stats.put("classCount", classService.count());
         stats.put("departmentCount", departmentService.count());
+        stats.put("studentCount", userService.count(
+                new LambdaQueryWrapper<MyUser>()
+                        .eq(MyUser::getRole, UserRole.ROLE_STUDENT)
+        ));
+        stats.put("teacherCount", userService.count(
+                new LambdaQueryWrapper<MyUser>()
+                        .eq(MyUser::getRole, UserRole.ROLE_TEACHER)
+        ));
+        stats.put("adminCount", userService.count(
+                new LambdaQueryWrapper<MyUser>()
+                        .eq(MyUser::getRole, UserRole.ROLE_ADMIN)
+        ));
+        stats.put("courseCount", courseService.count());
+        stats.put("enrollmentCount", enrollmentService.count(
+                new LambdaQueryWrapper<MyEnrollment>()
+                        .eq(MyEnrollment::getStatus, EnrollmentStatus.ENROLLED)
+        ));
 
         return RequestResult.success(stats);
     }
@@ -139,6 +159,25 @@ public class UserController {
 
         boolean res = userService.updateById(user);
         return res ? RequestResult.success(null) : RequestResult.error("Err on Edit Your Profile");
+    }
+
+    @PutMapping("/password")
+    public RequestResult<String> userEditPassword(Authentication authentication, @RequestBody EditPasswordRequest request) {
+        // 获取当前用户
+        MyUser user = userService.getOne(
+                new LambdaQueryWrapper<MyUser>()
+                        .eq(MyUser::getUsername, authentication.getName())
+        );
+
+        // 校验旧密码是否正确
+        if (passwordEncoder.matches(request.getOldPassword(), user.getPassword())) {
+            // 通过 进行修改
+            user.setPassword(passwordEncoder.encode(request.getNewPassword()));
+            userService.updateById(user);
+            return RequestResult.success("密码修改成功");
+        } else {
+            return RequestResult.error("旧密码错误");
+        }
     }
 
     ///  ================================= 登录相关 ================================== //
