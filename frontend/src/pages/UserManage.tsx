@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react';
-import { Table, Button, Modal, Form, Input, Select, Space, Popconfirm, message } from 'antd';
-import { PlusOutlined } from '@ant-design/icons';
+import { Table, Button, Modal, Form, Input, Select, Space, Popconfirm, message, Card, Row, Col } from 'antd';
+import { PlusOutlined, SearchOutlined, ReloadOutlined } from '@ant-design/icons';
 import { getUserList, addUser, editUser, deleteUser } from '../api/user';
+import type { UserFilter } from '../api/user';
 import { getAllClasses } from '../api/clazz';
 import { getRole } from '../utils/auth';
 
@@ -30,14 +31,16 @@ export default function UserManage() {
   const [modalOpen, setModalOpen] = useState(false);
   const [editing, setEditing] = useState<UserRecord | null>(null);
   const [form] = Form.useForm();
+  const [searchForm] = Form.useForm();
   const [classOptions, setClassOptions] = useState<ClassOption[]>([]);
+  const [filters, setFilters] = useState<UserFilter>({});
 
   const isAdmin = getRole() === 'ROLE_ADMIN';
 
   const fetchData = async () => {
     setLoading(true);
     try {
-      const res = await getUserList(page, pageSize);
+      const res = await getUserList(page, pageSize, filters);
       const d = (res as any).data;
       setData(d.records);
       setTotal(d.total);
@@ -52,10 +55,31 @@ export default function UserManage() {
     } catch { /* handled */ }
   };
 
-  useEffect(() => { fetchData(); }, [page, pageSize]);
+  useEffect(() => { fetchData(); }, [page, pageSize, filters]);
   useEffect(() => { fetchClasses(); }, []);
 
   const classMap = new Map(classOptions.map(c => [c.id, c.name]));
+
+  const handleSearch = () => {
+    const values = searchForm.getFieldsValue();
+    // 去掉空值，避免传空字符串给后端
+    const cleaned: UserFilter = {};
+    if (values.username) cleaned.username = values.username;
+    if (values.role) cleaned.role = values.role;
+    if (values.number) cleaned.number = values.number;
+    if (values.classId != null) cleaned.classId = values.classId;
+    if (values.gender) cleaned.gender = values.gender;
+    if (values.phoneNumber) cleaned.phoneNumber = values.phoneNumber;
+    if (values.status != null) cleaned.status = values.status;
+    setPage(1);
+    setFilters(cleaned);
+  };
+
+  const handleReset = () => {
+    searchForm.resetFields();
+    setPage(1);
+    setFilters({});
+  };
 
   const handleAdd = () => {
     setEditing(null);
@@ -117,6 +141,63 @@ export default function UserManage() {
 
   return (
     <>
+      <Card style={{ marginBottom: 16 }}>
+        <Form form={searchForm} layout="inline">
+          <Row gutter={[16, 12]} style={{ width: '100%' }}>
+            <Col span={6}>
+              <Form.Item name="username" label="用户名" style={{ marginBottom: 0 }}>
+                <Input placeholder="模糊搜索" allowClear />
+              </Form.Item>
+            </Col>
+            <Col span={6}>
+              <Form.Item name="role" label="角色" style={{ marginBottom: 0 }}>
+                <Select allowClear placeholder="全部" options={[
+                  { value: 'ROLE_ADMIN', label: '管理员' },
+                  { value: 'ROLE_TEACHER', label: '教师' },
+                  { value: 'ROLE_STUDENT', label: '学生' },
+                ]} />
+              </Form.Item>
+            </Col>
+            <Col span={6}>
+              <Form.Item name="number" label="学工号" style={{ marginBottom: 0 }}>
+                <Input placeholder="模糊搜索" allowClear />
+              </Form.Item>
+            </Col>
+            <Col span={6}>
+              <Form.Item name="classId" label="班级" style={{ marginBottom: 0 }}>
+                <Select allowClear placeholder="全部" options={classOptions.map(c => ({ value: c.id, label: c.name }))} />
+              </Form.Item>
+            </Col>
+            <Col span={6}>
+              <Form.Item name="gender" label="性别" style={{ marginBottom: 0 }}>
+                <Select allowClear placeholder="全部" options={[
+                  { value: 'MAN', label: '男' },
+                  { value: 'WOMAN', label: '女' },
+                ]} />
+              </Form.Item>
+            </Col>
+            <Col span={6}>
+              <Form.Item name="phoneNumber" label="手机号" style={{ marginBottom: 0 }}>
+                <Input placeholder="模糊搜索" allowClear />
+              </Form.Item>
+            </Col>
+            <Col span={6}>
+              <Form.Item name="status" label="状态" style={{ marginBottom: 0 }}>
+                <Select allowClear placeholder="全部" options={[
+                  { value: true, label: '启用' },
+                  { value: false, label: '禁用' },
+                ]} />
+              </Form.Item>
+            </Col>
+            <Col span={6} style={{ display: 'flex', alignItems: 'end' }}>
+              <Space>
+                <Button type="primary" icon={<SearchOutlined />} onClick={handleSearch}>搜索</Button>
+                <Button icon={<ReloadOutlined />} onClick={handleReset}>重置</Button>
+              </Space>
+            </Col>
+          </Row>
+        </Form>
+      </Card>
       {isAdmin && (
         <div style={{ marginBottom: 16 }}>
           <Button type="primary" icon={<PlusOutlined />} onClick={handleAdd}>添加用户</Button>

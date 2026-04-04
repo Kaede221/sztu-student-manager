@@ -13,8 +13,18 @@ export function register(data: LoginParams) {
   return request.post('/user/register', data);
 }
 
-export function getUserList(page = 1, size = 10) {
-  return request.get('/user/list', { params: { page, size } });
+export interface UserFilter {
+  username?: string;
+  role?: string;
+  number?: string;
+  classId?: number;
+  gender?: string;
+  phoneNumber?: string;
+  status?: boolean;
+}
+
+export function getUserList(page = 1, size = 10, filters?: UserFilter) {
+  return request.get('/user/list', { params: { page, size, ...filters } });
 }
 
 export function getUserById(id: number) {

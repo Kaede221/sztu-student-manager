@@ -34,8 +34,27 @@ public class UserController {
     private final DepartmentService departmentService;
 
     @GetMapping("/list")
-    public RequestResult<Page<MyUser>> getUserList(@RequestParam(defaultValue = "1") int page, @RequestParam(defaultValue = "10") int size) {
-        Page<MyUser> userPage = userService.page(new Page<>(page, size));
+    public RequestResult<Page<MyUser>> getUserList(
+            @RequestParam(defaultValue = "1") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(required = false) String username,
+            @RequestParam(required = false) String role,
+            @RequestParam(required = false) String number,
+            @RequestParam(required = false) Long classId,
+            @RequestParam(required = false) String gender,
+            @RequestParam(required = false) String phoneNumber,
+            @RequestParam(required = false) Boolean status
+    ) {
+        LambdaQueryWrapper<MyUser> wrapper = new LambdaQueryWrapper<>();
+        if (username != null) wrapper.like(MyUser::getUsername, username);
+        if (role != null) wrapper.eq(MyUser::getRole, role);
+        if (number != null) wrapper.like(MyUser::getNumber, number);
+        if (classId != null) wrapper.eq(MyUser::getClassId, classId);
+        if (gender != null) wrapper.eq(MyUser::getGender, gender);
+        if (phoneNumber != null) wrapper.like(MyUser::getPhoneNumber, phoneNumber);
+        if (status != null) wrapper.eq(MyUser::getStatus, status);
+
+        Page<MyUser> userPage = userService.page(new Page<>(page, size), wrapper);
         return RequestResult.success(userPage);
     }
 
@@ -60,7 +79,10 @@ public class UserController {
     @PreAuthorize("hasAuthority('ROLE_ADMIN')")
     @PutMapping
     public RequestResult<String> editUser(@RequestBody MyUser user) {
-        user.setPassword(passwordEncoder.encode(user.getPassword()));
+        if (user.getPassword() != null && !user.getPassword().isEmpty())
+            user.setPassword(passwordEncoder.encode(user.getPassword()));
+        else
+            user.setPassword(null);
         boolean res = userService.updateById(user);
         if (res) {
             return RequestResult.success(null);

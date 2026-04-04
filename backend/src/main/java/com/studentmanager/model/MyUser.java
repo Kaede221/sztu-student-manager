@@ -46,5 +46,5 @@ public class MyUser {
     /**
      * 账号状态 是否禁用
      */
-    private boolean status;
+    private Boolean status;
 }
