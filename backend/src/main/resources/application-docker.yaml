@@ -1,0 +1,5 @@
+spring:
+  datasource:
+    url: jdbc:mysql://mysql:3306/stumanage?useSSL=false&useUnicode=true&characterEncoding=utf8&serverTimezone=Asia/Shanghai
+    username: ${DB_USERNAME:root}
+    password: ${DB_PASSWORD:root}

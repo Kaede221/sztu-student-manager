@@ -63,16 +63,48 @@
 
 ## 快速开始
 
-### 环境要求
+### 方式一：Docker 部署（推荐）
+
+只需安装 Docker，无需手动配置数据库，一键启动：
+
+```bash
+cd backend
+docker compose up -d
+```
+
+首次启动会自动构建后端镜像、创建 MySQL 容器并执行建表脚本。
+
+- 后端：`http://localhost:8080`
+- MySQL：`localhost:3306`（用户名 `root`，密码 `root`）
+
+常用命令：
+
+```bash
+docker compose logs -f backend   # 查看后端日志
+docker compose down              # 停止服务
+docker compose down -v           # 停止并清除数据库数据
+docker compose up -d --build     # 代码修改后重新构建启动
+```
+
+### 方式二：本地开发
+
+#### 环境要求
 
 - Java 17+
 - Node.js 18+
 - MySQL 8+
 - pnpm
 
-### 数据库初始化
+#### 数据库初始化
 
-创建数据库并执行建表语句：
+创建数据库并执行建表脚本（建表 SQL 位于 `backend/db/init.sql`）：
+
+```bash
+mysql -uroot -p < backend/db/init.sql
+```
+
+<details>
+<summary>或手动执行以下 SQL</summary>
 
 ```sql
 CREATE DATABASE stumanage;
@@ -126,7 +158,9 @@ CREATE TABLE my_score (
 );
 ```
 
-### 后端启动
+</details>
+
+#### 后端启动
 
 ```bash
 cd backend
@@ -136,7 +170,7 @@ cd backend
 
 后端默认运行在 `http://localhost:8080`
 
-### 前端启动
+#### 前端启动
 
 ```bash
 cd frontend
