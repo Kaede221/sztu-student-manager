@@ -24,11 +24,9 @@ public class UpdateUserRequest {
     private UserRole role;
 
     @Schema(description = "学工编号")
-    @NotBlank(message = "用户编号不能为空")
     private String number;
 
     @Schema(description = "班级 ID")
-    @NotNull(message = "班级ID不能为空")
     private Long classId;
 
     @Schema(description = "性别")

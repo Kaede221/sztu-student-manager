@@ -236,11 +236,12 @@ export default function UserManage() {
               { value: 'ROLE_STUDENT', label: '学生' },
             ]} />
           </Form.Item>
-          <Form.Item name="number" label="学工号" rules={[{ required: true, message: '请输入学工号' }]}>
+          <Form.Item name="number" label="学工号">
             <Input placeholder="学生填学号，教师填工号" />
           </Form.Item>
-          <Form.Item name="classId" label="班级" rules={[{ required: true, message: '请选择班级' }]}>
+          <Form.Item name="classId" label="班级">
             <Select
+              allowClear
               placeholder="请选择班级"
               options={classOptions.map(c => ({ value: c.id, label: c.name }))}
             />
@@ -254,8 +255,8 @@ export default function UserManage() {
           <Form.Item name="phoneNumber" label="手机号">
             <Input />
           </Form.Item>
-          <Form.Item name="status" label="状态" rules={[{ required: true, message: '请选择状态' }]}>
-            <Select options={[
+          <Form.Item name="status" label="状态">
+            <Select allowClear options={[
               { value: true, label: '启用' },
               { value: false, label: '禁用' },
             ]} />

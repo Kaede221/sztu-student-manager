@@ -11,6 +11,7 @@ import {
   ReadOutlined,
   FormOutlined,
   TrophyOutlined,
+  FileTextOutlined,
 } from '@ant-design/icons';
 import { Outlet, useNavigate, useLocation } from 'react-router-dom';
 import { getUsername, getRole, removeToken } from '../utils/auth';
@@ -25,6 +26,7 @@ const allMenuItems = [
   { key: '/course', icon: <ReadOutlined />, label: '课程管理', roles: ['ROLE_ADMIN', 'ROLE_TEACHER'] },
   { key: '/enrollment', icon: <FormOutlined />, label: '选课中心', roles: ['ROLE_STUDENT'] },
   { key: '/score', icon: <TrophyOutlined />, label: '成绩查询', roles: ['ROLE_ADMIN', 'ROLE_TEACHER', 'ROLE_STUDENT'] },
+  { key: '/log', icon: <FileTextOutlined />, label: '操作日志', roles: ['ROLE_ADMIN'] },
 ];
 
 export default function MainLayout() {

@@ -10,6 +10,7 @@ import ClassManage from './pages/ClassManage';
 import CourseManage from './pages/CourseManage';
 import EnrollmentManage from './pages/EnrollmentManage';
 import ScoreManage from './pages/ScoreManage';
+import OperationLogManage from './pages/OperationLogManage';
 import RoleGuard from './components/RoleGuard';
 import { isLoggedIn } from './utils/auth';
 
@@ -58,6 +59,11 @@ export default function App() {
               </RoleGuard>
             } />
             <Route path="score" element={<ScoreManage />} />
+            <Route path="log" element={
+              <RoleGuard roles={['ROLE_ADMIN']}>
+                <OperationLogManage />
+              </RoleGuard>
+            } />
           </Route>
         </Routes>
       </BrowserRouter>
