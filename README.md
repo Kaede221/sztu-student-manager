@@ -7,7 +7,7 @@
 | 层 | 技术 |
 | --- | --- |
 | 前端 | React 19 + TypeScript + Vite + Ant Design 6 + Axios + React Router |
-| 后端 | Spring Boot 4 + Java 17 + Maven + MyBatis-Plus + Spring Security + JWT + SpringDoc OpenAPI |
+| 后端 | Spring Boot 4 + Java 17 + Maven + MyBatis-Plus + Spring Security + JWT + SpringDoc OpenAPI + AOP |
 | 数据库 | MySQL |
 
 ## 功能概览
@@ -25,11 +25,13 @@
 | 成绩查询 | 全部 | 自己课程 | 自己的 |
 | 个人信息编辑 | ✓ | ✓ | ✓ |
 | 数据统计看板 | ✓ | - | - |
+| 操作日志 | ✓ | - | - |
 
 ### 主要功能
 
 - **参数校验** — 基于 JSR 380，每个写操作使用独立 DTO，前后端校验规则对齐
 - **接口文档** — SpringDoc OpenAPI 自动生成，访问 `/swagger-ui/index.html` 查看
+- **操作日志** — 基于 AOP + 自定义注解，自动记录所有写操作，管理员可查看日志
 - **用户认证** — JWT Token 登录，BCrypt 密码加密，角色权限控制
 - **用户管理** — 分页查询，多条件筛选（用户名、角色、学号、班级、性别、手机号、状态）
 - **院系 / 班级管理** — CRUD，班级关联院系
@@ -45,7 +47,7 @@
 ├── backend/                      Spring Boot 后端
 │   └── src/main/java/com/studentmanager/
 │       ├── backend/              启动类
-│       ├── common/               通用类（RequestResult, JwtUtil, GlobalExceptionHandler）
+│       ├── common/               通用类（RequestResult, JwtUtil, GlobalExceptionHandler, AOP切面）
 │       ├── config/               配置类（SecurityConfig, MyBatisPlusConfig）
 │       ├── controller/           控制器
 │       ├── dto/                  数据传输对象（按模块分包，含参数校验注解）

@@ -13,7 +13,7 @@
 | 层级   | 技术                                                                              |
 | ------ | --------------------------------------------------------------------------------- |
 | 前端   | React 19 + TypeScript + Vite + Ant Design 6 + Axios + React Router 7 + Recharts   |
-| 后端   | Spring Boot 4 + Java 17 + Maven + MyBatis-Plus 3.5 + Spring Security + JWT (JJWT) + SpringDoc OpenAPI |
+| 后端   | Spring Boot 4 + Java 17 + Maven + MyBatis-Plus 3.5 + Spring Security + JWT (JJWT) + SpringDoc OpenAPI + AOP |
 | 数据库 | MySQL 8.0                                                                         |
 | 工具   | Lombok、BCrypt 密码加密、Bean Validation (JSR 380)                                |
 | 部署   | Docker + Docker Compose                                                           |
@@ -36,7 +36,7 @@
 ```
 com.studentmanager
 ├── backend/          启动类
-├── common/           公共组件（JWT工具、过滤器、统一响应、全局异常处理）
+├── common/           公共组件（JWT工具、过滤器、统一响应、全局异常处理、AOP切面、自定义注解）
 ├── config/           配置类（Spring Security、MyBatis-Plus 分页插件）
 ├── controller/       控制器层（RESTful 接口）
 ├── dto/              数据传输对象（按模块分包，含参数校验注解）
@@ -443,7 +443,70 @@ Spring Security 中需放行 Swagger 相关路径：
 .requestMatchers("/swagger-ui.html").permitAll()
 ```
 
-### 5.8 实体类与 MyBatis-Plus 注解
+### 5.8 AOP 操作日志
+
+系统通过 **自定义注解 + AOP 切面** 实现操作日志的自动记录，无需在每个 Controller 方法中手动编写日志代码。
+
+**自定义注解** — 标记需要记录日志的方法：
+
+```java
+@Target(ElementType.METHOD)
+@Retention(RetentionPolicy.RUNTIME)
+public @interface OperationLog {
+    String value(); // 操作描述
+}
+```
+
+**AOP 切面** — 拦截注解并自动记录日志：
+
+```java
+@Aspect
+@Component
+@RequiredArgsConstructor
+public class OperationLogAspect {
+    private final OperationLogService operationLogService;
+
+    @AfterReturning("@annotation(com.studentmanager.common.OperationLog)")
+    public void logOperation(JoinPoint joinPoint) {
+        // 获取注解描述
+        MethodSignature signature = (MethodSignature) joinPoint.getSignature();
+        OperationLog annotation = signature.getMethod().getAnnotation(OperationLog.class);
+
+        // 获取当前用户、请求IP、请求参数
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        String username = (auth != null) ? auth.getName() : "匿名";
+        // ... 省略 IP 和参数获取
+
+        // 组装并保存日志
+        MyOperationLog log = new MyOperationLog();
+        log.setUsername(username);
+        log.setOperation(annotation.value());
+        log.setMethod(joinPoint.getTarget().getClass().getSimpleName() + "." + method.getName());
+        operationLogService.save(log);
+    }
+}
+```
+
+**使用方式** — 在 Controller 的写操作上加注解即可：
+
+```java
+@OperationLog("添加课程")
+@PostMapping
+public RequestResult<String> addNewCourse(@Valid @RequestBody CreateCourseRequest request) { ... }
+```
+
+日志记录表存储操作用户、操作描述、请求方法、请求参数、客户端 IP 和操作时间，管理员可在前端"操作日志"页面分页查看所有操作记录。
+
+| 字段 | 说明 |
+| --- | --- |
+| username | 操作用户（从 SecurityContext 获取） |
+| operation | 操作描述（从注解 value 获取） |
+| method | 类名.方法名（从 JoinPoint 获取） |
+| params | 请求参数 JSON（从方法参数序列化） |
+| ip | 客户端 IP（从 HttpServletRequest 获取） |
+| created_at | 操作时间（数据库自动填充） |
+
+### 5.9 实体类与 MyBatis-Plus 注解
 
 以用户实体为例，展示 MyBatis-Plus 的注解使用：
 
@@ -476,7 +539,7 @@ public interface UserMapper extends BaseMapper<MyUser> {
 }
 ```
 
-### 5.9 选课功能（业务逻辑示例）
+### 5.10 选课功能（业务逻辑示例）
 
 选课接口是本系统中业务逻辑最复杂的部分，需要校验课程存在性、重复选课、课程容量：
 
@@ -532,7 +595,7 @@ enrollment.setStatus(EnrollmentStatus.DROPPED);
 enrollmentService.updateById(enrollment);
 ```
 
-### 5.10 分页与动态查询
+### 5.11 分页与动态查询
 
 使用 MyBatis-Plus 的 `Page` 和 `LambdaQueryWrapper` 实现分页查询与多条件动态筛选：
 
@@ -577,7 +640,7 @@ public class MyBatisPlusConfig {
 }
 ```
 
-### 5.11 密码安全
+### 5.12 密码安全
 
 - **存储加密**：使用 BCrypt 算法加密存储，不存明文密码
 - **密码脱敏**：通过 `@JsonProperty(access = Access.WRITE_ONLY)` 确保密码字段不会出现在 API 响应中
@@ -599,7 +662,7 @@ if (passwordEncoder.matches(request.getOldPassword(), user.getPassword())) {
 }
 ```
 
-### 5.12 前端请求拦截
+### 5.13 前端请求拦截
 
 前端通过 Axios 拦截器自动附加 Token，并统一处理响应错误：
 
@@ -702,6 +765,12 @@ request.interceptors.response.use((response) => {
 | GET  | /api/score/my              | 查看我的成绩 | STUDENT         |
 | GET  | /api/score/list/{courseId} | 查看课程成绩 | ADMIN / TEACHER |
 
+### 6.8 操作日志
+
+| 方法 | 路径     | 说明               | 权限  |
+| ---- | -------- | ------------------ | ----- |
+| GET  | /api/log | 分页查询操作日志   | ADMIN |
+
 ---
 
 ## 七、前端页面说明
@@ -736,6 +805,10 @@ request.interceptors.response.use((response) => {
 - **学生视图**：查看自己所有课程成绩，成绩按分数段用不同颜色标注
 - **教师/管理员视图**：选择课程后查看该课程所有选课学生及成绩，支持录入和修改成绩
 
+### 7.8 操作日志（管理员）
+
+分页展示所有操作记录，包括操作用户、操作类型（彩色标签区分）、请求方法、IP 地址和操作时间。仅管理员可见。
+
 ---
 
 ## 八、安全机制
@@ -749,6 +822,7 @@ request.interceptors.response.use((response) => {
 | 参数校验     | 独立 DTO + `@Valid` + Bean Validation 注解，前后端规则对齐 |
 | 接口文档     | SpringDoc OpenAPI 自动生成 Swagger UI，便于接口调试与协作  |
 | 全局异常处理 | `@RestControllerAdvice` 统一捕获异常，避免暴露系统内部信息 |
+| 操作审计     | AOP + 自定义注解自动记录所有写操作，管理员可查看操作日志  |
 | 注册安全     | 注册时角色固定为 STUDENT，不允许用户自行指定角色           |
 
 ---
@@ -814,4 +888,5 @@ docker compose up -d --build
 6. **选课容量控制**：在选课接口中实现了课程容量校验，防止超额选课
 7. **DTO 参数校验**：每个写操作使用独立 DTO，前后端校验规则对齐，Create 与 Update 分离
 8. **自动化接口文档**：SpringDoc OpenAPI 集成，注解驱动生成 Swagger UI，降低前后端协作成本
-9. **Docker 一键部署**：通过 Docker Compose 编排后端与数据库，简化部署流程
+9. **AOP 操作日志**：自定义注解 + 切面自动记录操作日志，零侵入业务代码，管理员可追溯所有写操作
+10. **Docker 一键部署**：通过 Docker Compose 编排后端与数据库，简化部署流程
