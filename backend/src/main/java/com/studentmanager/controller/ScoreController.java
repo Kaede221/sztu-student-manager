@@ -10,6 +10,8 @@ import com.studentmanager.model.MyUser;
 import com.studentmanager.service.EnrollmentService;
 import com.studentmanager.service.ScoreService;
 import com.studentmanager.service.UserService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -18,6 +20,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+@Tag(name = "成绩管理")
 @RestController
 @RequestMapping("/api/score")
 @RequiredArgsConstructor
@@ -26,6 +29,7 @@ public class ScoreController {
     private final EnrollmentService enrollmentService;
     private final UserService userService;
 
+    @Operation(summary = "录入成绩")
     @PreAuthorize("hasAnyAuthority('ROLE_ADMIN', 'ROLE_TEACHER')")
     @PostMapping
     public RequestResult<String> insertScore(@Valid @RequestBody CreateScoreRequest createScoreRequest) {
@@ -47,6 +51,7 @@ public class ScoreController {
         return RequestResult.success("录入成功");
     }
 
+    @Operation(summary = "修改已录入的成绩")
     @PreAuthorize("hasAnyAuthority('ROLE_ADMIN', 'ROLE_TEACHER')")
     @PutMapping
     public RequestResult<String> updateScore(@Valid @RequestBody UpdateScoreRequest updateScoreRequest) {
@@ -58,9 +63,10 @@ public class ScoreController {
         return res ? RequestResult.success("修改成功") : RequestResult.error("修改失败");
     }
 
+    @Operation(summary = "学生获取自己的所有成绩")
     @PreAuthorize("hasAuthority('ROLE_STUDENT')")
     @GetMapping("/my")
-    public RequestResult<List<MyScore>> stduentGetScore(Authentication authentication) {
+    public RequestResult<List<MyScore>> studentGetScore(Authentication authentication) {
         MyUser user = userService.getOne(
                 new LambdaQueryWrapper<MyUser>()
                         .eq(MyUser::getUsername, authentication.getName())
@@ -89,6 +95,7 @@ public class ScoreController {
         return RequestResult.success(scores);
     }
 
+    @Operation(summary = "根据课程ID，查询所有选了课的学生的成绩")
     @PreAuthorize("hasAnyAuthority('ROLE_ADMIN', 'ROLE_TEACHER')")
     @GetMapping("/list/{courseId}")
     public RequestResult<List<MyScore>> getCourseScores(@PathVariable Long courseId) {

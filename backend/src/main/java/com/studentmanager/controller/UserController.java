@@ -10,6 +10,8 @@ import com.studentmanager.model.MyEnrollment;
 import com.studentmanager.model.MyUser;
 import com.studentmanager.model.UserRole;
 import com.studentmanager.service.*;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -20,6 +22,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.HashMap;
 import java.util.Map;
 
+@Tag(name = "用户管理")
 @RestController
 @RequestMapping("/api/user")
 @RequiredArgsConstructor
@@ -34,6 +37,7 @@ public class UserController {
     private final CourseService courseService;
     private final EnrollmentService enrollmentService;
 
+    @Operation(summary = "分页获取用户信息")
     @GetMapping("/list")
     public RequestResult<Page<MyUser>> getUserList(
             @RequestParam(defaultValue = "1") int page,
@@ -59,12 +63,14 @@ public class UserController {
         return RequestResult.success(userPage);
     }
 
+    @Operation(summary = "根据用户ID，获取用户信息")
     @GetMapping("/{id}")
     public RequestResult<MyUser> getUserById(@PathVariable Long id) {
         MyUser user = userService.getById(id);
         return user != null ? RequestResult.success(user) : RequestResult.error("User is not found");
     }
 
+    @Operation(summary = "添加新用户")
     @PreAuthorize("hasAuthority('ROLE_ADMIN')")
     @PostMapping
     public RequestResult<String> addUser(@Valid @RequestBody CreateUserRequest createUserRequest) {
@@ -87,6 +93,7 @@ public class UserController {
         return RequestResult.error("Error on add user: " + user);
     }
 
+    @Operation(summary = "编辑现有用户")
     @PreAuthorize("hasAuthority('ROLE_ADMIN')")
     @PutMapping
     public RequestResult<String> editUser(@Valid @RequestBody UpdateUserRequest updateUserRequest) {
@@ -112,6 +119,7 @@ public class UserController {
         return RequestResult.error("Error on update user: " + user);
     }
 
+    @Operation(summary = "根据ID删除用户")
     @PreAuthorize("hasAuthority('ROLE_ADMIN')")
     @DeleteMapping("/{id}")
     public RequestResult<String> deleteUserById(@PathVariable Long id) {
@@ -122,6 +130,7 @@ public class UserController {
 
     /// ================================= 统计相关 ==================================== //
 
+    @Operation(summary = "获取用户相关的统计数据")
     @PreAuthorize("hasAuthority('ROLE_ADMIN')")
     @GetMapping("/stats")
     public RequestResult<Map<String, Long>> getStats() {
@@ -153,6 +162,7 @@ public class UserController {
 
     /// ================================= 个人信息 ==================================== //
 
+    @Operation(summary = "获取当前用户自己的相关信息")
     @GetMapping("/me")
     public RequestResult<MyUser> getMyInfo(Authentication authentication) {
         String username = authentication.getName();
@@ -164,6 +174,7 @@ public class UserController {
         return RequestResult.success(user);
     }
 
+    @Operation(summary = "编辑当前用户自己的相关信息")
     @PutMapping("/me")
     public RequestResult<String> editMyInfo(Authentication authentication, @RequestBody EditMeRequest editMeRequest) {
         String username = authentication.getName();
@@ -180,6 +191,7 @@ public class UserController {
         return res ? RequestResult.success(null) : RequestResult.error("Err on Edit Your Profile");
     }
 
+    @Operation(summary = "当前用户修改密码")
     @PutMapping("/password")
     public RequestResult<String> userEditPassword(Authentication authentication, @Valid @RequestBody EditPasswordRequest request) {
         // 获取当前用户
@@ -201,6 +213,7 @@ public class UserController {
 
     ///  ================================= 登录相关 ================================== //
 
+    @Operation(summary = "新用户注册")
     @PostMapping("/register")
     public RequestResult<String> userRegister(@Valid @RequestBody LoginRequest request) {
         LambdaQueryWrapper<MyUser> wrapper = new LambdaQueryWrapper<>();
@@ -221,6 +234,7 @@ public class UserController {
         return RequestResult.error("用户已存在");
     }
 
+    @Operation(summary = "用户登录")
     @PostMapping("/login")
     public RequestResult<String> userLogin(@Valid @RequestBody LoginRequest loginRequest) {
         LambdaQueryWrapper<MyUser> wrapper = new LambdaQueryWrapper<>();

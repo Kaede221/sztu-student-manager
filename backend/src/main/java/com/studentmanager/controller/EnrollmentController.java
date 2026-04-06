@@ -9,6 +9,8 @@ import com.studentmanager.model.MyUser;
 import com.studentmanager.service.CourseService;
 import com.studentmanager.service.EnrollmentService;
 import com.studentmanager.service.UserService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
@@ -16,6 +18,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+@Tag(name = "选课管理")
 @RestController
 @RequestMapping("/api/enrollment")
 @RequiredArgsConstructor
@@ -24,6 +27,7 @@ public class EnrollmentController {
     private final CourseService courseService;
     private final UserService userService;
 
+    @Operation(summary = "学生提交选课")
     @PreAuthorize("hasAuthority('ROLE_STUDENT')")
     @PostMapping("/enroll/{courseId}")
     public RequestResult<String> studentEnroll(@PathVariable Long courseId, Authentication authentication) {
@@ -70,6 +74,7 @@ public class EnrollmentController {
         return RequestResult.success("选课成功");
     }
 
+    @Operation(summary = "学生取消选课")
     @PreAuthorize("hasAuthority('ROLE_STUDENT')")
     @PostMapping("/drop/{courseId}")
     public RequestResult<String> studentDrop(@PathVariable Long courseId, Authentication authentication) {
@@ -96,6 +101,7 @@ public class EnrollmentController {
         return res ? RequestResult.success("退课成功") : RequestResult.error("退课失败");
     }
 
+    @Operation(summary = "学生获取自己的所有选课")
     @PreAuthorize("hasAuthority('ROLE_STUDENT')")
     @GetMapping("/my")
     public RequestResult<List<MyEnrollment>> getMyEnrollments(Authentication authentication) {
@@ -115,6 +121,7 @@ public class EnrollmentController {
         return RequestResult.success(enrollmentList);
     }
 
+    @Operation(summary = "根据课程ID，获取所有选课信息")
     @PreAuthorize("hasAnyAuthority('ROLE_ADMIN', 'ROLE_TEACHER')")
     @GetMapping("/list/{courseId}")
     public RequestResult<List<MyEnrollment>> getEnrollmentPage(@PathVariable Long courseId) {
