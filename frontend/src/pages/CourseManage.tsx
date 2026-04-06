@@ -138,7 +138,7 @@ export default function CourseManage() {
             <Input />
           </Form.Item>
           <Form.Item name="credit" label="学分" rules={[{ required: true, message: '请输入学分' }]}>
-            <InputNumber min={1} max={10} style={{ width: '100%' }} />
+            <InputNumber min={1} max={8} style={{ width: '100%' }} />
           </Form.Item>
           <Form.Item name="teacherId" label="授课教师" rules={[{ required: true, message: '请选择授课教师' }]}>
             <Select
@@ -148,7 +148,7 @@ export default function CourseManage() {
             />
           </Form.Item>
           <Form.Item name="capacity" label="课程容量" rules={[{ required: true, message: '请输入容量' }]}>
-            <InputNumber min={1} max={500} style={{ width: '100%' }} />
+            <InputNumber min={1} max={100} style={{ width: '100%' }} />
           </Form.Item>
           <Form.Item name="description" label="课程简介">
             <Input.TextArea rows={3} />

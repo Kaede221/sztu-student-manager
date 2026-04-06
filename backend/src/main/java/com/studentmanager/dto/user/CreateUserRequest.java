@@ -25,12 +25,10 @@ public class CreateUserRequest {
     /**
      * 学工编号
      */
-    @NotBlank(message = "用户编号不能为空")
     private String number;
     /**
      * 班级 ID
      */
-    @NotNull(message = "班级ID不能为空")
     private Long classId;
     /**
      * 用户性别

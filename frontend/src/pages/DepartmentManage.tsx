@@ -112,7 +112,7 @@ export default function DepartmentManage() {
           <Form.Item name="name" label="院系名称" rules={[{ required: true, message: '请输入院系名称' }]}>
             <Input />
           </Form.Item>
-          <Form.Item name="description" label="描述" rules={[{ required: true, message: '请输入描述' }]}>
+          <Form.Item name="description" label="描述">
             <Input.TextArea rows={3} />
           </Form.Item>
         </Form>

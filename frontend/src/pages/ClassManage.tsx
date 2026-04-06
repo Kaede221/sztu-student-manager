@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Table, Button, Modal, Form, Input, Select, Space, Popconfirm, message } from 'antd';
+import { Table, Button, Modal, Form, InputNumber, Select, Input, Space, Popconfirm, message } from 'antd';
 import { PlusOutlined } from '@ant-design/icons';
 import { getClassList, addClass, editClass, deleteClass } from '../api/clazz';
 import { getAllDepartments } from '../api/department';
@@ -138,7 +138,7 @@ export default function ClassManage() {
             />
           </Form.Item>
           <Form.Item name="grade" label="年级" rules={[{ required: true, message: '请输入年级' }]}>
-            <Input type="number" placeholder="例如: 2024" />
+            <InputNumber min={1} placeholder="例如: 2024" style={{ width: '100%' }} />
           </Form.Item>
         </Form>
       </Modal>
