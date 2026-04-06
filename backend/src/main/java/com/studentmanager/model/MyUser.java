@@ -2,6 +2,7 @@ package com.studentmanager.model;
 
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
+import com.baomidou.mybatisplus.annotation.TableLogic;
 import com.baomidou.mybatisplus.annotation.TableName;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;
@@ -47,4 +48,9 @@ public class MyUser {
      * 账号状态 是否禁用
      */
     private Boolean status;
+    /**
+     * 是否被删除
+     */
+    @TableLogic
+    private Integer deleted;
 }

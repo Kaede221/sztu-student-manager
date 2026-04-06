@@ -5,6 +5,10 @@ spring:
     url: jdbc:mysql://localhost:3306/stumanage?useSSL=false&useUnicode=true&characterEncoding=utf8&serverTimezone=Asia/Shanghai
     username: root
     password: root
+  flyway:
+    enabled: true
+    baseline-on-migrate: true
+    baseline-version: 2
 
 mybatis-plus:
   configuration:

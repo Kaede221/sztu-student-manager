@@ -2,6 +2,7 @@ package com.studentmanager.model;
 
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
+import com.baomidou.mybatisplus.annotation.TableLogic;
 import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.Data;
 
@@ -21,4 +22,9 @@ public class MyDepartment {
      * 部门描述
      */
     private String description;
+    /**
+     * 是否被删除
+     */
+    @TableLogic
+    private Integer deleted;
 }
