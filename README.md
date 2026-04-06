@@ -7,7 +7,7 @@
 | 层 | 技术 |
 | --- | --- |
 | 前端 | React 19 + TypeScript + Vite + Ant Design 6 + Axios + React Router |
-| 后端 | Spring Boot 4 + Java 17 + Maven + MyBatis-Plus + Spring Security + JWT + SpringDoc OpenAPI + AOP |
+| 后端 | Spring Boot 4 + Java 17 + Maven + MyBatis-Plus + Spring Security + JWT + SpringDoc OpenAPI + AOP + Flyway |
 | 数据库 | MySQL |
 
 ## 功能概览
@@ -32,6 +32,8 @@
 - **参数校验** — 基于 JSR 380，每个写操作使用独立 DTO，前后端校验规则对齐
 - **接口文档** — SpringDoc OpenAPI 自动生成，访问 `/swagger-ui/index.html` 查看
 - **操作日志** — 基于 AOP + 自定义注解，自动记录所有写操作，管理员可查看日志
+- **软删除** — MyBatis-Plus `@TableLogic` 实现逻辑删除，删除操作不物理删除数据
+- **数据库迁移** — Flyway 管理表结构版本，变更可追溯、可重放
 - **用户认证** — JWT Token 登录，BCrypt 密码加密，角色权限控制
 - **用户管理** — 分页查询，多条件筛选（用户名、角色、学号、班级、性别、手机号、状态）
 - **院系 / 班级管理** — CRUD，班级关联院系
@@ -107,10 +109,10 @@ docker compose up -d --build     # 代码修改后重新构建启动
 
 #### 数据库初始化
 
-创建数据库并执行建表脚本（建表 SQL 位于 `backend/db/init.sql`）：
+创建数据库（Flyway 会在启动时自动执行迁移脚本建表）：
 
 ```bash
-mysql -uroot -p < backend/db/init.sql
+mysql -uroot -p -e "CREATE DATABASE IF NOT EXISTS stumanage"
 ```
 
 <details>

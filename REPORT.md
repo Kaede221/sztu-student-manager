@@ -13,7 +13,7 @@
 | 层级   | 技术                                                                              |
 | ------ | --------------------------------------------------------------------------------- |
 | 前端   | React 19 + TypeScript + Vite + Ant Design 6 + Axios + React Router 7 + Recharts   |
-| 后端   | Spring Boot 4 + Java 17 + Maven + MyBatis-Plus 3.5 + Spring Security + JWT (JJWT) + SpringDoc OpenAPI + AOP |
+| 后端   | Spring Boot 4 + Java 17 + Maven + MyBatis-Plus 3.5 + Spring Security + JWT (JJWT) + SpringDoc OpenAPI + AOP + Flyway |
 | 数据库 | MySQL 8.0                                                                         |
 | 工具   | Lombok、BCrypt 密码加密、Bean Validation (JSR 380)                                |
 | 部署   | Docker + Docker Compose                                                           |
@@ -692,6 +692,50 @@ request.interceptors.response.use((response) => {
 });
 ```
 
+### 5.14 数据库迁移（Flyway）
+
+系统使用 Flyway 管理数据库表结构的版本演进。迁移脚本位于 `src/main/resources/db/migration/`，文件名遵循 `V{版本号}__{描述}.sql` 格式。
+
+应用启动时，Flyway 自动检测并执行尚未应用的脚本：
+
+```
+db/migration/
+├── V1__init.sql                  # 初始建表（用户、院系、班级、课程、选课、成绩、操作日志）
+└── V2__add_deleted_column.sql    # 为 user/course/department/class 表添加 deleted 字段
+```
+
+配置示例：
+
+```yaml
+spring:
+  flyway:
+    enabled: true
+    baseline-on-migrate: true
+    baseline-version: 0
+```
+
+核心原则：**已执行的脚本不可修改**，新变更只能写新的版本号。Flyway 通过 `flyway_schema_history` 表记录每个脚本的执行状态和校验和。
+
+### 5.15 软删除（@TableLogic）
+
+对用户、课程、院系、班级四张表实现逻辑删除，删除操作不物理删除数据，而是将 `deleted` 字段标记为 1。
+
+只需在实体类字段上加一个注解：
+
+```java
+@TableLogic
+private Integer deleted;
+```
+
+MyBatis-Plus 自动改写 SQL：
+
+| 操作 | 原始行为 | 加 @TableLogic 后 |
+| --- | --- | --- |
+| `removeById(id)` | `DELETE FROM table WHERE id = ?` | `UPDATE table SET deleted = 1 WHERE id = ?` |
+| `selectList()` | `SELECT * FROM table` | `SELECT * FROM table WHERE deleted = 0` |
+
+无需修改任何 Controller 或 Service 代码，零侵入实现。
+
 ---
 
 ## 六、API 接口一览
@@ -823,6 +867,8 @@ request.interceptors.response.use((response) => {
 | 接口文档     | SpringDoc OpenAPI 自动生成 Swagger UI，便于接口调试与协作  |
 | 全局异常处理 | `@RestControllerAdvice` 统一捕获异常，避免暴露系统内部信息 |
 | 操作审计     | AOP + 自定义注解自动记录所有写操作，管理员可查看操作日志  |
+| 软删除       | `@TableLogic` 逻辑删除，数据不物理删除，可恢复            |
+| 数据库迁移   | Flyway 版本化管理表结构变更，自动执行、可追溯              |
 | 注册安全     | 注册时角色固定为 STUDENT，不允许用户自行指定角色           |
 
 ---
@@ -839,11 +885,10 @@ request.interceptors.response.use((response) => {
 
 ### 9.2 数据库初始化
 
-```sql
-CREATE DATABASE stumanage;
-USE stumanage;
+创建数据库即可，Flyway 会在启动时自动执行迁移脚本建表：
 
--- 执行建表语句（见 backend/db/init.sql）
+```sql
+CREATE DATABASE IF NOT EXISTS stumanage;
 ```
 
 ### 9.3 启动后端
@@ -889,4 +934,6 @@ docker compose up -d --build
 7. **DTO 参数校验**：每个写操作使用独立 DTO，前后端校验规则对齐，Create 与 Update 分离
 8. **自动化接口文档**：SpringDoc OpenAPI 集成，注解驱动生成 Swagger UI，降低前后端协作成本
 9. **AOP 操作日志**：自定义注解 + 切面自动记录操作日志，零侵入业务代码，管理员可追溯所有写操作
-10. **Docker 一键部署**：通过 Docker Compose 编排后端与数据库，简化部署流程
+10. **Flyway 数据库迁移**：版本化管理表结构变更，启动自动执行，团队协作无需手动同步 SQL
+11. **软删除机制**：`@TableLogic` 一个注解实现逻辑删除，零侵入，数据可追溯可恢复
+12. **Docker 一键部署**：通过 Docker Compose 编排后端与数据库，简化部署流程
