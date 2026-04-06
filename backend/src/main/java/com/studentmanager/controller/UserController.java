@@ -4,9 +4,7 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.studentmanager.common.JwtUtil;
 import com.studentmanager.common.RequestResult;
-import com.studentmanager.dto.EditMeRequest;
-import com.studentmanager.dto.EditPasswordRequest;
-import com.studentmanager.dto.LoginRequest;
+import com.studentmanager.dto.user.*;
 import com.studentmanager.model.EnrollmentStatus;
 import com.studentmanager.model.MyEnrollment;
 import com.studentmanager.model.MyUser;
@@ -69,7 +67,17 @@ public class UserController {
 
     @PreAuthorize("hasAuthority('ROLE_ADMIN')")
     @PostMapping
-    public RequestResult<String> addUser(@RequestBody MyUser user) {
+    public RequestResult<String> addUser(@Valid @RequestBody CreateUserRequest createUserRequest) {
+        MyUser user = new MyUser();
+        user.setPassword(createUserRequest.getPassword());
+        user.setPhoneNumber(createUserRequest.getPhoneNumber());
+        user.setGender(createUserRequest.getGender());
+        user.setUsername(createUserRequest.getUsername());
+        user.setRole(createUserRequest.getRole());
+        user.setStatus(createUserRequest.getStatus());
+        user.setClassId(createUserRequest.getClassId());
+        user.setNumber(createUserRequest.getNumber());
+
         // 处理密码
         user.setPassword(passwordEncoder.encode(user.getPassword()));
         boolean res = userService.save(user);
@@ -81,7 +89,18 @@ public class UserController {
 
     @PreAuthorize("hasAuthority('ROLE_ADMIN')")
     @PutMapping
-    public RequestResult<String> editUser(@RequestBody MyUser user) {
+    public RequestResult<String> editUser(@Valid @RequestBody UpdateUserRequest updateUserRequest) {
+        MyUser user = new MyUser();
+        user.setPassword(updateUserRequest.getPassword());
+        user.setPhoneNumber(updateUserRequest.getPhoneNumber());
+        user.setGender(updateUserRequest.getGender());
+        user.setUsername(updateUserRequest.getUsername());
+        user.setRole(updateUserRequest.getRole());
+        user.setStatus(updateUserRequest.getStatus());
+        user.setClassId(updateUserRequest.getClassId());
+        user.setNumber(updateUserRequest.getNumber());
+        user.setId(updateUserRequest.getId());
+
         if (user.getPassword() != null && !user.getPassword().isEmpty())
             user.setPassword(passwordEncoder.encode(user.getPassword()));
         else

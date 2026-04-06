@@ -3,8 +3,11 @@ package com.studentmanager.controller;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.studentmanager.common.RequestResult;
+import com.studentmanager.dto.classes.CreateClassRequest;
+import com.studentmanager.dto.classes.UpdateClassRequest;
 import com.studentmanager.model.MyClass;
 import com.studentmanager.service.ClassService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -38,14 +41,25 @@ public class ClassController {
 
     @PreAuthorize("hasAnyAuthority('ROLE_ADMIN')")
     @PostMapping
-    public RequestResult<String> addNewClass(@RequestBody MyClass myClass) {
+    public RequestResult<String> addNewClass(@Valid @RequestBody CreateClassRequest createClassRequest) {
+        MyClass myClass = new MyClass();
+        myClass.setName(createClassRequest.getName());
+        myClass.setDepartmentId(createClassRequest.getDepartmentId());
+        myClass.setGrade(createClassRequest.getGrade());
+
         boolean res = classService.save(myClass);
         return res ? RequestResult.success(null) : RequestResult.error("Err on Add New Class: " + myClass.toString());
     }
 
     @PreAuthorize("hasAnyAuthority('ROLE_ADMIN')")
     @PutMapping
-    public RequestResult<String> editClass(@RequestBody MyClass myClass) {
+    public RequestResult<String> editClass(@Valid @RequestBody UpdateClassRequest updateClassRequest) {
+        MyClass myClass = new MyClass();
+        myClass.setId(updateClassRequest.getId());
+        myClass.setGrade(updateClassRequest.getGrade());
+        myClass.setDepartmentId(updateClassRequest.getDepartmentId());
+        myClass.setName(updateClassRequest.getName());
+
         boolean res = classService.updateById(myClass);
         return res ? RequestResult.success(null) : RequestResult.error("Err on Update Class: " + myClass.toString());
     }

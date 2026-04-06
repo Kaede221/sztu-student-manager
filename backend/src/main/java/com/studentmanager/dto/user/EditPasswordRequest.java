@@ -1,4 +1,4 @@
-package com.studentmanager.dto;
+package com.studentmanager.dto.user;
 
 import jakarta.validation.constraints.NotBlank;
 import lombok.Data;

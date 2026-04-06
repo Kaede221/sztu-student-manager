@@ -2,12 +2,15 @@ package com.studentmanager.controller;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.studentmanager.common.RequestResult;
+import com.studentmanager.dto.score.CreateScoreRequest;
+import com.studentmanager.dto.score.UpdateScoreRequest;
 import com.studentmanager.model.MyEnrollment;
 import com.studentmanager.model.MyScore;
 import com.studentmanager.model.MyUser;
 import com.studentmanager.service.EnrollmentService;
 import com.studentmanager.service.ScoreService;
 import com.studentmanager.service.UserService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
@@ -25,24 +28,32 @@ public class ScoreController {
 
     @PreAuthorize("hasAnyAuthority('ROLE_ADMIN', 'ROLE_TEACHER')")
     @PostMapping
-    public RequestResult<String> insertScore(@RequestBody MyScore score) {
-        MyEnrollment enrollment = enrollmentService.getById(score.getEnrollmentId());
+    public RequestResult<String> insertScore(@Valid @RequestBody CreateScoreRequest createScoreRequest) {
+        MyScore myScore = new MyScore();
+        myScore.setEnrollmentId(createScoreRequest.getEnrollmentId());
+        myScore.setScore(createScoreRequest.getScore());
+
+        MyEnrollment enrollment = enrollmentService.getById(myScore.getEnrollmentId());
         if (enrollment == null) return RequestResult.error("选课记录不存在");
 
-        MyScore myScore = scoreService.getOne(
+        MyScore score = scoreService.getOne(
                 new LambdaQueryWrapper<MyScore>()
-                        .eq(MyScore::getEnrollmentId, score.getEnrollmentId())
+                        .eq(MyScore::getEnrollmentId, myScore.getEnrollmentId())
         );
 
-        if (myScore != null) return RequestResult.error("该学生已有成绩");
+        if (score != null) return RequestResult.error("该学生已有成绩");
 
-        scoreService.save(score);
+        scoreService.save(myScore);
         return RequestResult.success("录入成功");
     }
 
     @PreAuthorize("hasAnyAuthority('ROLE_ADMIN', 'ROLE_TEACHER')")
     @PutMapping
-    public RequestResult<String> updateScore(@RequestBody MyScore score) {
+    public RequestResult<String> updateScore(@Valid @RequestBody UpdateScoreRequest updateScoreRequest) {
+        MyScore score = new MyScore();
+        score.setId(updateScoreRequest.getId());
+        score.setScore(updateScoreRequest.getScore());
+
         boolean res = scoreService.updateById(score);
         return res ? RequestResult.success("修改成功") : RequestResult.error("修改失败");
     }

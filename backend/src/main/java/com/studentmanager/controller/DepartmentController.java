@@ -2,8 +2,11 @@ package com.studentmanager.controller;
 
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.studentmanager.common.RequestResult;
+import com.studentmanager.dto.department.CreateDepartmentRequest;
+import com.studentmanager.dto.department.UpdateDepartmentRequest;
 import com.studentmanager.model.MyDepartment;
 import com.studentmanager.service.DepartmentService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -29,14 +32,23 @@ public class DepartmentController {
 
     @PreAuthorize("hasAnyAuthority('ROLE_ADMIN')")
     @PostMapping
-    public RequestResult<String> addDepartment(@RequestBody MyDepartment myDepartment) {
+    public RequestResult<String> addDepartment(@Valid @RequestBody CreateDepartmentRequest createDepartmentRequest) {
+        MyDepartment myDepartment = new MyDepartment();
+        myDepartment.setDescription(createDepartmentRequest.getDescription());
+        myDepartment.setName(createDepartmentRequest.getName());
+
         boolean res = departmentService.save(myDepartment);
         return res ? RequestResult.success(null) : RequestResult.error("Err on add department: " + myDepartment.toString());
     }
 
     @PreAuthorize("hasAnyAuthority('ROLE_ADMIN')")
     @PutMapping
-    public RequestResult<String> editDepartment(@RequestBody MyDepartment myDepartment) {
+    public RequestResult<String> editDepartment(@Valid @RequestBody UpdateDepartmentRequest updateDepartmentRequest) {
+        MyDepartment myDepartment = new MyDepartment();
+        myDepartment.setName(updateDepartmentRequest.getName());
+        myDepartment.setDescription(updateDepartmentRequest.getDescription());
+        myDepartment.setId(updateDepartmentRequest.getId());
+
         boolean res = departmentService.updateById(myDepartment);
         return res ? RequestResult.success(null) : RequestResult.error("Err on edit department: " + myDepartment.toString());
     }
