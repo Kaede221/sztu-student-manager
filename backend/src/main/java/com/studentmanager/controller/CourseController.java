@@ -1,6 +1,7 @@
 package com.studentmanager.controller;
 
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.studentmanager.common.OperationLog;
 import com.studentmanager.common.RequestResult;
 import com.studentmanager.dto.course.CreateCourseRequest;
 import com.studentmanager.dto.course.UpdateCourseRequest;
@@ -27,6 +28,7 @@ public class CourseController {
         return RequestResult.success(coursePage);
     }
 
+    @OperationLog("添加课程")
     @Operation(summary = "添加新课程")
     @PreAuthorize("hasAnyAuthority('ROLE_ADMIN', 'ROLE_TEACHER')")
     @PostMapping
@@ -41,6 +43,7 @@ public class CourseController {
         return res ? RequestResult.success(null) : RequestResult.error("Err on add course: " + createCourseRequest);
     }
 
+    @OperationLog("修改课程")
     @Operation(summary = "修改现有课程")
     @PreAuthorize("hasAnyAuthority('ROLE_ADMIN', 'ROLE_TEACHER')")
     @PutMapping
@@ -57,6 +60,7 @@ public class CourseController {
         return res ? RequestResult.success(null) : RequestResult.error("Err on edit course: " + course);
     }
 
+    @OperationLog("删除课程")
     @Operation(summary = "根据ID删除课程")
     @PreAuthorize("hasAnyAuthority('ROLE_ADMIN', 'ROLE_TEACHER')")
     @DeleteMapping("/{id}")

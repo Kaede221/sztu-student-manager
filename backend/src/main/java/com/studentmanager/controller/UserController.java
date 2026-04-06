@@ -3,6 +3,7 @@ package com.studentmanager.controller;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.studentmanager.common.JwtUtil;
+import com.studentmanager.common.OperationLog;
 import com.studentmanager.common.RequestResult;
 import com.studentmanager.dto.user.*;
 import com.studentmanager.model.EnrollmentStatus;
@@ -70,6 +71,7 @@ public class UserController {
         return user != null ? RequestResult.success(user) : RequestResult.error("User is not found");
     }
 
+    @OperationLog("添加用户")
     @Operation(summary = "添加新用户")
     @PreAuthorize("hasAuthority('ROLE_ADMIN')")
     @PostMapping
@@ -93,6 +95,7 @@ public class UserController {
         return RequestResult.error("Error on add user: " + user);
     }
 
+    @OperationLog("编辑用户")
     @Operation(summary = "编辑现有用户")
     @PreAuthorize("hasAuthority('ROLE_ADMIN')")
     @PutMapping
@@ -119,6 +122,7 @@ public class UserController {
         return RequestResult.error("Error on update user: " + user);
     }
 
+    @OperationLog("删除用户")
     @Operation(summary = "根据ID删除用户")
     @PreAuthorize("hasAuthority('ROLE_ADMIN')")
     @DeleteMapping("/{id}")
@@ -174,6 +178,7 @@ public class UserController {
         return RequestResult.success(user);
     }
 
+    @OperationLog("用户修改信息")
     @Operation(summary = "编辑当前用户自己的相关信息")
     @PutMapping("/me")
     public RequestResult<String> editMyInfo(Authentication authentication, @RequestBody EditMeRequest editMeRequest) {
@@ -191,6 +196,7 @@ public class UserController {
         return res ? RequestResult.success(null) : RequestResult.error("Err on Edit Your Profile");
     }
 
+    @OperationLog("用户修改密码")
     @Operation(summary = "当前用户修改密码")
     @PutMapping("/password")
     public RequestResult<String> userEditPassword(Authentication authentication, @Valid @RequestBody EditPasswordRequest request) {
@@ -212,7 +218,7 @@ public class UserController {
     }
 
     ///  ================================= 登录相关 ================================== //
-
+    @OperationLog("用户注册")
     @Operation(summary = "新用户注册")
     @PostMapping("/register")
     public RequestResult<String> userRegister(@Valid @RequestBody LoginRequest request) {
@@ -234,6 +240,7 @@ public class UserController {
         return RequestResult.error("用户已存在");
     }
 
+    @OperationLog("用户登录")
     @Operation(summary = "用户登录")
     @PostMapping("/login")
     public RequestResult<String> userLogin(@Valid @RequestBody LoginRequest loginRequest) {

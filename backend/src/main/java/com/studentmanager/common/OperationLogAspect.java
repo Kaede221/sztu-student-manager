@@ -12,7 +12,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
-import tools.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.lang.reflect.Method;
 
@@ -21,7 +21,7 @@ import java.lang.reflect.Method;
 @RequiredArgsConstructor
 public class OperationLogAspect {
     private final OperationLogService operationLogService;
-    private final ObjectMapper objectMapper;
+    private final ObjectMapper objectMapper = new ObjectMapper();
 
     @AfterReturning("@annotation(com.studentmanager.common.OperationLog)")
     public void logOperation(JoinPoint joinPoint) {

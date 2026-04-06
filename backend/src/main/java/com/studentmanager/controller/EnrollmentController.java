@@ -1,6 +1,7 @@
 package com.studentmanager.controller;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.studentmanager.common.OperationLog;
 import com.studentmanager.common.RequestResult;
 import com.studentmanager.model.EnrollmentStatus;
 import com.studentmanager.model.MyCourse;
@@ -27,6 +28,7 @@ public class EnrollmentController {
     private final CourseService courseService;
     private final UserService userService;
 
+    @OperationLog("学生选课")
     @Operation(summary = "学生提交选课")
     @PreAuthorize("hasAuthority('ROLE_STUDENT')")
     @PostMapping("/enroll/{courseId}")
@@ -74,6 +76,7 @@ public class EnrollmentController {
         return RequestResult.success("选课成功");
     }
 
+    @OperationLog("学生退课")
     @Operation(summary = "学生取消选课")
     @PreAuthorize("hasAuthority('ROLE_STUDENT')")
     @PostMapping("/drop/{courseId}")

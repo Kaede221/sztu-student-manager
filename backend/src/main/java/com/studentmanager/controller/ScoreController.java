@@ -1,6 +1,7 @@
 package com.studentmanager.controller;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.studentmanager.common.OperationLog;
 import com.studentmanager.common.RequestResult;
 import com.studentmanager.dto.score.CreateScoreRequest;
 import com.studentmanager.dto.score.UpdateScoreRequest;
@@ -29,6 +30,7 @@ public class ScoreController {
     private final EnrollmentService enrollmentService;
     private final UserService userService;
 
+    @OperationLog("录入成绩")
     @Operation(summary = "录入成绩")
     @PreAuthorize("hasAnyAuthority('ROLE_ADMIN', 'ROLE_TEACHER')")
     @PostMapping
@@ -51,6 +53,7 @@ public class ScoreController {
         return RequestResult.success("录入成功");
     }
 
+    @OperationLog("修改成绩")
     @Operation(summary = "修改已录入的成绩")
     @PreAuthorize("hasAnyAuthority('ROLE_ADMIN', 'ROLE_TEACHER')")
     @PutMapping

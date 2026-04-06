@@ -2,6 +2,7 @@ package com.studentmanager.controller;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.studentmanager.common.OperationLog;
 import com.studentmanager.common.RequestResult;
 import com.studentmanager.dto.classes.CreateClassRequest;
 import com.studentmanager.dto.classes.UpdateClassRequest;
@@ -45,6 +46,7 @@ public class ClassController {
         return RequestResult.success(classPage);
     }
 
+    @OperationLog("增加班级")
     @Operation(summary = "增加新班级")
     @PreAuthorize("hasAnyAuthority('ROLE_ADMIN')")
     @PostMapping
@@ -58,6 +60,7 @@ public class ClassController {
         return res ? RequestResult.success(null) : RequestResult.error("Err on Add New Class: " + myClass.toString());
     }
 
+    @OperationLog("编辑班级")
     @Operation(summary = "编辑已有班级")
     @PreAuthorize("hasAnyAuthority('ROLE_ADMIN')")
     @PutMapping
@@ -72,6 +75,7 @@ public class ClassController {
         return res ? RequestResult.success(null) : RequestResult.error("Err on Update Class: " + myClass.toString());
     }
 
+    @OperationLog("删除班级")
     @Operation(summary = "根据ID删除班级")
     @PreAuthorize("hasAnyAuthority('ROLE_ADMIN')")
     @DeleteMapping("/{id}")

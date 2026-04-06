@@ -1,6 +1,7 @@
 package com.studentmanager.controller;
 
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.studentmanager.common.OperationLog;
 import com.studentmanager.common.RequestResult;
 import com.studentmanager.dto.department.CreateDepartmentRequest;
 import com.studentmanager.dto.department.UpdateDepartmentRequest;
@@ -35,6 +36,7 @@ public class DepartmentController {
         return RequestResult.success(departmentService.list());
     }
 
+    @OperationLog("添加部门")
     @Operation(summary = "增加新部门")
     @PreAuthorize("hasAnyAuthority('ROLE_ADMIN')")
     @PostMapping
@@ -47,6 +49,7 @@ public class DepartmentController {
         return res ? RequestResult.success(null) : RequestResult.error("Err on add department: " + myDepartment.toString());
     }
 
+    @OperationLog("编辑部门")
     @Operation(summary = "编辑现有部门")
     @PreAuthorize("hasAnyAuthority('ROLE_ADMIN')")
     @PutMapping
@@ -60,6 +63,7 @@ public class DepartmentController {
         return res ? RequestResult.success(null) : RequestResult.error("Err on edit department: " + myDepartment.toString());
     }
 
+    @OperationLog("删除部门")
     @Operation(summary = "根据ID删除现有部门")
     @PreAuthorize("hasAnyAuthority('ROLE_ADMIN')")
     @DeleteMapping("/{id}")
