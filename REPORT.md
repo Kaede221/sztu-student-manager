@@ -13,9 +13,9 @@
 | 层级   | 技术                                                                              |
 | ------ | --------------------------------------------------------------------------------- |
 | 前端   | React 19 + TypeScript + Vite + Ant Design 6 + Axios + React Router 7 + Recharts   |
-| 后端   | Spring Boot 4 + Java 17 + Maven + MyBatis-Plus 3.5 + Spring Security + JWT (JJWT) |
+| 后端   | Spring Boot 4 + Java 17 + Maven + MyBatis-Plus 3.5 + Spring Security + JWT (JJWT) + SpringDoc OpenAPI |
 | 数据库 | MySQL 8.0                                                                         |
-| 工具   | Lombok、BCrypt 密码加密                                                           |
+| 工具   | Lombok、BCrypt 密码加密、Bean Validation (JSR 380)                                |
 | 部署   | Docker + Docker Compose                                                           |
 
 ---
@@ -39,7 +39,12 @@ com.studentmanager
 ├── common/           公共组件（JWT工具、过滤器、统一响应、全局异常处理）
 ├── config/           配置类（Spring Security、MyBatis-Plus 分页插件）
 ├── controller/       控制器层（RESTful 接口）
-├── dto/              数据传输对象（登录请求、修改密码请求等）
+├── dto/              数据传输对象（按模块分包，含参数校验注解）
+│   ├── course/       课程相关 DTO（Create/Update）
+│   ├── classes/      班级相关 DTO
+│   ├── department/   院系相关 DTO
+│   ├── score/        成绩相关 DTO
+│   └── user/         用户相关 DTO（Login/Create/Update/EditMe/EditPassword）
 ├── mapper/           持久层（MyBatis-Plus Mapper 接口）
 ├── model/            实体层（数据库表映射）
 └── service/          业务逻辑层（接口 + 实现）
@@ -251,12 +256,12 @@ public class SecurityConfig {
 // 仅管理员可以操作用户
 @PreAuthorize("hasAuthority('ROLE_ADMIN')")
 @PostMapping
-public RequestResult<String> addUser(@RequestBody MyUser user) { ... }
+public RequestResult<String> addUser(@Valid @RequestBody CreateUserRequest request) { ... }
 
 // 管理员和教师都可以操作课程
 @PreAuthorize("hasAnyAuthority('ROLE_ADMIN', 'ROLE_TEACHER')")
 @PostMapping
-public RequestResult<String> addCourse(@RequestBody MyCourse course) { ... }
+public RequestResult<String> addCourse(@Valid @RequestBody CreateCourseRequest request) { ... }
 
 // 仅学生可以选课
 @PreAuthorize("hasAuthority('ROLE_STUDENT')")
@@ -349,7 +354,96 @@ public class GlobalExceptionHandler {
 }
 ```
 
-### 5.6 实体类与 MyBatis-Plus 注解
+### 5.6 参数校验与 DTO 设计
+
+系统采用 **方案 B**（独立 DTO）实现参数校验，每个写操作使用专门的请求 DTO，与实体类解耦。DTO 按模块分包组织（`dto.course`、`dto.user` 等），新增与编辑使用不同 DTO（编辑多一个必填的 `id` 字段）。
+
+以课程创建为例：
+
+```java
+@Data
+public class CreateCourseRequest {
+    @NotBlank(message = "课程名称不能为空")
+    private String name;
+
+    @NotNull(message = "学分不能为空")
+    @Min(value = 1, message = "学分至少为 1")
+    @Max(value = 8, message = "学分最多为 8")
+    private Integer credit;
+
+    @NotNull(message = "授课教师不能为空")
+    private Long teacherId;
+
+    @NotNull(message = "课程容量不能为空")
+    @Min(value = 1, message = "容量至少为 1")
+    @Max(value = 100, message = "容量最大为 100")
+    private Integer capacity;
+
+    private String description; // 选填
+}
+```
+
+Controller 中使用 `@Valid` 触发校验，校验失败由全局异常处理器统一返回错误信息：
+
+```java
+@PostMapping
+public RequestResult<String> addNewCourse(@Valid @RequestBody CreateCourseRequest request) {
+    MyCourse course = new MyCourse();
+    course.setName(request.getName());
+    course.setCredit(request.getCredit());
+    // ... DTO → 实体转换
+    courseService.save(course);
+    return RequestResult.success(null);
+}
+```
+
+常用校验注解：
+
+| 注解 | 适用类型 | 作用 |
+| --- | --- | --- |
+| `@NotBlank` | String | 非空非空白 |
+| `@NotNull` | Integer、Long、枚举等 | 非 null |
+| `@Min` / `@Max` | 整数类型 | 数值范围限制 |
+| `@DecimalMin` / `@DecimalMax` | BigDecimal | 小数范围限制 |
+| `@Size` | String、Collection | 长度/大小范围 |
+
+前端表单的校验规则（如 `InputNumber` 的 `min`/`max`）与后端 DTO 保持一致，实现前后端双重校验。
+
+### 5.7 接口文档（SpringDoc OpenAPI）
+
+系统集成 SpringDoc OpenAPI，自动生成 Swagger UI 接口文档，启动后访问 `/swagger-ui/index.html` 即可查看。
+
+通过注解为接口添加说明：
+
+```java
+@Tag(name = "课程管理")
+@RestController
+@RequestMapping("/api/course")
+public class CourseController {
+
+    @Operation(summary = "分页查询课程列表")
+    @GetMapping("/list")
+    public RequestResult<Page<MyCourse>> getCourseListByPage(...) { ... }
+}
+```
+
+DTO 字段通过 `@Schema` 注解生成参数说明：
+
+```java
+@Schema(description = "课程名称", example = "高等数学")
+@NotBlank(message = "课程名称不能为空")
+private String name;
+```
+
+Spring Security 中需放行 Swagger 相关路径：
+
+```java
+.requestMatchers("/swagger-ui/**").permitAll()
+.requestMatchers("/v3/api-docs/**").permitAll()
+.requestMatchers("/swagger-ui.html").permitAll()
+```
+
+### 5.8 实体类与 MyBatis-Plus 注解
 
 以用户实体为例，展示 MyBatis-Plus 的注解使用：
 
@@ -382,7 +476,7 @@ public interface UserMapper extends BaseMapper<MyUser> {
 }
 ```
 
-### 5.7 选课功能（业务逻辑示例）
+### 5.9 选课功能（业务逻辑示例）
 
 选课接口是本系统中业务逻辑最复杂的部分，需要校验课程存在性、重复选课、课程容量：
 
@@ -438,7 +532,7 @@ enrollment.setStatus(EnrollmentStatus.DROPPED);
 enrollmentService.updateById(enrollment);
 ```
 
-### 5.8 分页与动态查询
+### 5.10 分页与动态查询
 
 使用 MyBatis-Plus 的 `Page` 和 `LambdaQueryWrapper` 实现分页查询与多条件动态筛选：
 
@@ -483,7 +577,7 @@ public class MyBatisPlusConfig {
 }
 ```
 
-### 5.9 密码安全
+### 5.11 密码安全
 
 - **存储加密**：使用 BCrypt 算法加密存储，不存明文密码
 - **密码脱敏**：通过 `@JsonProperty(access = Access.WRITE_ONLY)` 确保密码字段不会出现在 API 响应中
@@ -505,7 +599,7 @@ if (passwordEncoder.matches(request.getOldPassword(), user.getPassword())) {
 }
 ```
 
-### 5.10 前端请求拦截
+### 5.12 前端请求拦截
 
 前端通过 Axios 拦截器自动附加 Token，并统一处理响应错误：
 
@@ -652,7 +746,8 @@ request.interceptors.response.use((response) => {
 | 密码安全     | BCrypt 加密存储，API 响应中不返回密码字段                  |
 | 权限控制     | Spring Security + `@PreAuthorize` 方法级注解               |
 | 跨域保护     | CORS 配置允许前端域名访问                                  |
-| 参数校验     | `@Valid` + `@NotBlank` / `@Size` 注解校验入参              |
+| 参数校验     | 独立 DTO + `@Valid` + Bean Validation 注解，前后端规则对齐 |
+| 接口文档     | SpringDoc OpenAPI 自动生成 Swagger UI，便于接口调试与协作  |
 | 全局异常处理 | `@RestControllerAdvice` 统一捕获异常，避免暴露系统内部信息 |
 | 注册安全     | 注册时角色固定为 STUDENT，不允许用户自行指定角色           |
 
@@ -717,4 +812,6 @@ docker compose up -d --build
 4. **统一响应与异常处理**：保证前后端交互格式一致，提升开发效率
 5. **密码安全机制**：BCrypt 加密 + 密码脱敏双重保障
 6. **选课容量控制**：在选课接口中实现了课程容量校验，防止超额选课
-7. **Docker 一键部署**：通过 Docker Compose 编排后端与数据库，简化部署流程
+7. **DTO 参数校验**：每个写操作使用独立 DTO，前后端校验规则对齐，Create 与 Update 分离
+8. **自动化接口文档**：SpringDoc OpenAPI 集成，注解驱动生成 Swagger UI，降低前后端协作成本
+9. **Docker 一键部署**：通过 Docker Compose 编排后端与数据库，简化部署流程

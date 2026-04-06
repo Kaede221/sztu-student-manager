@@ -7,7 +7,7 @@
 | 层 | 技术 |
 | --- | --- |
 | 前端 | React 19 + TypeScript + Vite + Ant Design 6 + Axios + React Router |
-| 后端 | Spring Boot 4 + Java 17 + Maven + MyBatis-Plus + Spring Security + JWT |
+| 后端 | Spring Boot 4 + Java 17 + Maven + MyBatis-Plus + Spring Security + JWT + SpringDoc OpenAPI |
 | 数据库 | MySQL |
 
 ## 功能概览
@@ -28,6 +28,8 @@
 
 ### 主要功能
 
+- **参数校验** — 基于 JSR 380，每个写操作使用独立 DTO，前后端校验规则对齐
+- **接口文档** — SpringDoc OpenAPI 自动生成，访问 `/swagger-ui/index.html` 查看
 - **用户认证** — JWT Token 登录，BCrypt 密码加密，角色权限控制
 - **用户管理** — 分页查询，多条件筛选（用户名、角色、学号、班级、性别、手机号、状态）
 - **院系 / 班级管理** — CRUD，班级关联院系
@@ -46,7 +48,12 @@
 │       ├── common/               通用类（RequestResult, JwtUtil, GlobalExceptionHandler）
 │       ├── config/               配置类（SecurityConfig, MyBatisPlusConfig）
 │       ├── controller/           控制器
-│       ├── dto/                  数据传输对象
+│       ├── dto/                  数据传输对象（按模块分包，含参数校验注解）
+│       │   ├── course/          课程相关 DTO
+│       │   ├── classes/         班级相关 DTO
+│       │   ├── department/      院系相关 DTO
+│       │   ├── score/           成绩相关 DTO
+│       │   └── user/            用户相关 DTO
 │       ├── mapper/               MyBatis-Plus Mapper
 │       ├── model/                实体类
 │       ├── service/              Service 接口
@@ -75,6 +82,7 @@ docker compose up -d
 首次启动会自动构建后端镜像、创建 MySQL 容器并执行建表脚本。
 
 - 后端：`http://localhost:8080`
+- 接口文档：`http://localhost:8080/swagger-ui/index.html`
 - MySQL：`localhost:3306`（用户名 `root`，密码 `root`）
 
 常用命令：
@@ -168,7 +176,7 @@ cd backend
 ./mvnw spring-boot:run
 ```
 
-后端默认运行在 `http://localhost:8080`
+后端默认运行在 `http://localhost:8080`，接口文档访问 `http://localhost:8080/swagger-ui/index.html`
 
 #### 前端启动
 
