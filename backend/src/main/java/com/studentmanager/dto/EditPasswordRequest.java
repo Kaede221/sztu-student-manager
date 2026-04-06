@@ -5,8 +5,8 @@ import lombok.Data;
 
 @Data
 public class EditPasswordRequest {
-    @NotBlank
+    @NotBlank(message = "旧密码不能为空")
     private String oldPassword;
-    @NotBlank
+    @NotBlank(message = "新密码不能为空")
     private String newPassword;
 }

@@ -162,7 +162,7 @@ public class UserController {
     }
 
     @PutMapping("/password")
-    public RequestResult<String> userEditPassword(Authentication authentication, @RequestBody EditPasswordRequest request) {
+    public RequestResult<String> userEditPassword(Authentication authentication, @Valid @RequestBody EditPasswordRequest request) {
         // 获取当前用户
         MyUser user = userService.getOne(
                 new LambdaQueryWrapper<MyUser>()
