@@ -47,3 +47,13 @@ CREATE TABLE IF NOT EXISTS my_score (
   enrollment_id BIGINT NOT NULL,
   score         DECIMAL(5, 2) NOT NULL
 );
+
+CREATE TABLE my_operation_log (
+  id          BIGINT PRIMARY KEY AUTO_INCREMENT,
+  username    VARCHAR(100) NOT NULL COMMENT '操作用户',
+  operation   VARCHAR(200) NOT NULL COMMENT '操作描述',
+  method      VARCHAR(200) NOT NULL COMMENT '请求方法',
+  params      TEXT         COMMENT '请求参数',
+  ip          VARCHAR(50)  COMMENT '请求IP',
+  created_at  DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '操作时间'
+);
