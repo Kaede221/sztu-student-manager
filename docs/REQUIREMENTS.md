@@ -146,78 +146,91 @@
 
 ### 3.1 概念设计 — E-R 图
 
-下图描述实体之间的关系（基数 ":N" / ":M" 等使用 Crow's Foot 记号）：
+下图采用 **Chen 记号** 绘制：矩形 = 实体，菱形 = 联系，椭圆 = 属性，连线上的 `1 / N / M / 0..1` 表示基数；带 `*` 的属性为主键。完整属性列表见 [3.2 关系模式](#32-关系模式逻辑设计)。
 
 ```mermaid
-erDiagram
-    DEPARTMENT ||--o{ CLASS : "包含"
-    CLASS     ||--o{ USER : "归属（学生）"
-    USER      ||--o{ COURSE : "授课（教师）"
-    USER      ||--o{ ENROLLMENT : "选课（学生）"
-    COURSE    ||--o{ ENROLLMENT : "被选"
-    ENROLLMENT ||--o| SCORE : "对应"
-    USER      ||--o{ OPERATION_LOG : "操作"
+flowchart LR
+    %% ===== 实体（矩形） =====
+    DEPT[院系 Department]
+    CLS[班级 Class]
+    USR[用户 User]
+    CRS[课程 Course]
+    ENR[选课 Enrollment]
+    SCR[成绩 Score]
+    LOG[操作日志 OperationLog]
 
-    DEPARTMENT {
-        BIGINT       id PK
-        VARCHAR_100  name
-        VARCHAR_100  description
-        TINYINT      deleted
-    }
-    CLASS {
-        BIGINT       id PK
-        BIGINT       department_id FK
-        VARCHAR_100  name
-        INT          grade
-        TINYINT      deleted
-    }
-    USER {
-        BIGINT       id PK
-        VARCHAR_100  username UK
-        VARCHAR_255  password
-        VARCHAR_20   role
-        VARCHAR_50   number UK
-        BIGINT       class_id FK
-        VARCHAR_50   gender
-        VARCHAR_20   phone_number
-        TINYINT      status
-        TINYINT      deleted
-    }
-    COURSE {
-        BIGINT       id PK
-        VARCHAR_100  name
-        INT          credit
-        BIGINT       teacher_id FK
-        INT          capacity
-        VARCHAR_200  description
-        TINYINT      deleted
-    }
-    ENROLLMENT {
-        BIGINT       id PK
-        BIGINT       student_id FK
-        BIGINT       course_id FK
-        VARCHAR_100  status
-    }
-    SCORE {
-        BIGINT       id PK
-        BIGINT       enrollment_id FK
-        DECIMAL_5_2  score
-    }
-    OPERATION_LOG {
-        BIGINT       id PK
-        VARCHAR_100  username
-        VARCHAR_200  operation
-        VARCHAR_200  method
-        TEXT         params
-        VARCHAR_50   ip
-        DATETIME     created_at
-    }
+    %% ===== 联系（菱形） =====
+    R1{包含}
+    R2{归属}
+    R3{授课}
+    R4a{选课}
+    R4b{被选}
+    R5{对应}
+    R6{操作}
+
+    %% ===== 实体—联系（带基数） =====
+    DEPT ---|1| R1
+    R1 ---|N| CLS
+
+    CLS ---|1| R2
+    R2 ---|N| USR
+
+    USR ---|1| R3
+    R3 ---|N| CRS
+
+    USR ---|1| R4a
+    R4a ---|N| ENR
+    CRS ---|1| R4b
+    R4b ---|N| ENR
+
+    ENR ---|1| R5
+    R5 ---|"0..1"| SCR
+
+    USR ---|1| R6
+    R6 ---|N| LOG
+
+    %% ===== 主要属性（椭圆） =====
+    DEPT --- D1((id*))
+    DEPT --- D2((name))
+
+    CLS --- C1((id*))
+    CLS --- C2((name))
+    CLS --- C3((grade))
+
+    USR --- U1((id*))
+    USR --- U2((username))
+    USR --- U3((role))
+    USR --- U4((number))
+
+    CRS --- K1((id*))
+    CRS --- K2((name))
+    CRS --- K3((credit))
+    CRS --- K4((capacity))
+
+    ENR --- E1((id*))
+    ENR --- E2((status))
+
+    SCR --- S1((id*))
+    SCR --- S2((score))
+
+    LOG --- L1((id*))
+    LOG --- L2((operation))
+    LOG --- L3((created_at))
+
+    %% ===== 配色 =====
+    classDef entity fill:#e3f2fd,stroke:#1976d2,stroke-width:2px,color:#000;
+    classDef rel    fill:#fff3e0,stroke:#f57c00,stroke-width:2px,color:#000;
+    classDef attr   fill:#f3e5f5,stroke:#7b1fa2,stroke-width:1px,color:#000;
+    class DEPT,CLS,USR,CRS,ENR,SCR,LOG entity;
+    class R1,R2,R3,R4a,R4b,R5,R6 rel;
+    class D1,D2,C1,C2,C3,U1,U2,U3,U4,K1,K2,K3,K4,E1,E2,S1,S2,L1,L2,L3 attr;
 ```
 
-> 说明：USER 表通过 `role` 字段同时承担"管理员 / 教师 / 学生"三种身份；
-> "教师授课"是 USER → COURSE 的一对多关系（`COURSE.teacher_id`）；
-> "学生选课"是 USER ↔ COURSE 的多对多关系，使用关联实体 ENROLLMENT 拆分；
-> 一条选课记录最多对应一条成绩（1:0..1）。
+> 说明：
+> - `User` 表通过 `role` 字段同时承担"管理员 / 教师 / 学生"三种身份；
+> - "教师授课"是 `User` → `Course` 的一对多联系（`Course.teacher_id`）；
+> - "学生选课"原本是 `User` ↔ `Course` 的 M:N 联系，已用 **关联实体** `Enrollment` 拆分为两个 1:N 联系（选课 / 被选）；
+> - 一条选课记录最多对应一条成绩，故 `Enrollment` ↔ `Score` 为 1:0..1。
 
 ### 3.2 关系模式（逻辑设计）
 
@@ -398,11 +411,21 @@ erDiagram
 
 ### 5.2 整体架构
 
-```
-┌──────────────┐     HTTP/JSON     ┌──────────────────┐     JDBC     ┌─────────┐
-│  React 前端  │  ◄──────────────► │ Spring Boot 后端 │ ◄──────────► │  MySQL  │
-│   (Vite)     │   Bearer Token    │  (RESTful API)   │ MyBatis-Plus │         │
-└──────────────┘                   └──────────────────┘              └─────────┘
+```mermaid
+flowchart LR
+    FE["React 前端<br/>(Vite)"]
+    BE["Spring Boot 后端<br/>(RESTful API)"]
+    DB[("MySQL")]
+
+    FE <-->|"HTTP/JSON<br/>Bearer Token"| BE
+    BE <-->|"JDBC<br/>MyBatis-Plus"| DB
+
+    classDef fe fill:#e3f2fd,stroke:#1976d2,stroke-width:2px,color:#000;
+    classDef be fill:#fff3e0,stroke:#f57c00,stroke-width:2px,color:#000;
+    classDef db fill:#f3e5f5,stroke:#7b1fa2,stroke-width:2px,color:#000;
+    class FE fe;
+    class BE be;
+    class DB db;
 ```
 
 ### 5.3 后端分层
