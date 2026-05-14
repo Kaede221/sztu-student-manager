@@ -32,13 +32,19 @@ export default function OperationLogManage() {
 
   useEffect(() => { fetchData(); }, [page, pageSize]);
 
-  const operationColor = (operation: string) => {
-    if (operation.includes('删除') || operation.includes('退课')) return 'red';
-    if (operation.includes('添加') || operation.includes('增加') || operation.includes('录入') || operation.includes('注册')) return 'green';
-    if (operation.includes('编辑') || operation.includes('修改')) return 'blue';
-    if (operation.includes('登录')) return 'purple';
-    if (operation.includes('选课')) return 'cyan';
-    return 'default';
+  const operationStyle = (operation: string): React.CSSProperties => {
+    const base = { border: 'none', fontWeight: 500 };
+    if (operation.includes('删除') || operation.includes('退课'))
+      return { ...base, background: '#FBEBEE', color: '#B5384D' };
+    if (operation.includes('添加') || operation.includes('增加') || operation.includes('录入') || operation.includes('注册'))
+      return { ...base, background: '#E8F2EC', color: '#2D6A4F' };
+    if (operation.includes('编辑') || operation.includes('修改'))
+      return { ...base, background: '#FAF1DE', color: '#A87B1F' };
+    if (operation.includes('登录'))
+      return { ...base, background: '#ECF0EE', color: '#4A6B5C' };
+    if (operation.includes('选课'))
+      return { ...base, background: '#EFF4F1', color: '#6B8E7F' };
+    return { ...base, background: '#F2EFE6', color: '#6B6B6B' };
   };
 
   const columns = [
@@ -46,7 +52,7 @@ export default function OperationLogManage() {
     { title: '操作用户', dataIndex: 'username', key: 'username', width: 120 },
     {
       title: '操作类型', dataIndex: 'operation', key: 'operation', width: 140,
-      render: (text: string) => <Tag color={operationColor(text)}>{text}</Tag>,
+      render: (text: string) => <Tag style={operationStyle(text)}>{text}</Tag>,
     },
     { title: '请求方法', dataIndex: 'method', key: 'method', ellipsis: true },
     { title: 'IP', dataIndex: 'ip', key: 'ip', width: 140 },

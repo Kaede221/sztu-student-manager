@@ -6,6 +6,16 @@ import { getMyEnrollments, getEnrollmentsByCourse } from '../api/enrollment';
 import { getUserList } from '../api/user';
 import { getRole } from '../utils/auth';
 
+const scoreTag = (score: number) => {
+  if (score >= 90) {
+    return <Tag style={{ background: '#E8F2EC', color: '#2D6A4F', border: 'none', fontWeight: 600 }}>{score}</Tag>;
+  }
+  if (score >= 60) {
+    return <Tag style={{ background: '#FAF1DE', color: '#A87B1F', border: 'none', fontWeight: 600 }}>{score}</Tag>;
+  }
+  return <Tag style={{ background: '#FBEBEE', color: '#B5384D', border: 'none', fontWeight: 600 }}>{score}</Tag>;
+};
+
 interface ScoreRecord {
   id: number;
   enrollmentId: number;
@@ -66,11 +76,7 @@ function StudentScoreView() {
     },
     {
       title: '成绩', dataIndex: 'score', key: 'score',
-      render: (score: number) => {
-        if (score >= 90) return <Tag color="green">{score}</Tag>;
-        if (score >= 60) return <Tag color="blue">{score}</Tag>;
-        return <Tag color="red">{score}</Tag>;
-      },
+      render: (score: number) => scoreTag(score),
     },
   ];
 
@@ -164,18 +170,16 @@ function TeacherScoreView() {
       title: '选课状态', key: 'status', width: 100,
       render: (_: unknown, record: EnrollmentRecord) => (
         record.status === 'ENROLLED'
-          ? <Tag color="green">已选</Tag>
-          : <Tag color="red">已退</Tag>
+          ? <Tag style={{ background: '#E8F2EC', color: '#2D6A4F', border: 'none' }}>已选</Tag>
+          : <Tag style={{ background: '#F2EFE6', color: '#9A9A9A', border: 'none' }}>已退</Tag>
       ),
     },
     {
       title: '成绩', key: 'score', width: 100,
       render: (_: unknown, record: EnrollmentRecord) => {
         const s = scoreMap.get(record.id);
-        if (!s) return <Tag>未录入</Tag>;
-        if (s.score >= 90) return <Tag color="green">{s.score}</Tag>;
-        if (s.score >= 60) return <Tag color="blue">{s.score}</Tag>;
-        return <Tag color="red">{s.score}</Tag>;
+        if (!s) return <Tag style={{ background: '#F2EFE6', color: '#9A9A9A', border: 'none' }}>未录入</Tag>;
+        return scoreTag(s.score);
       },
     },
     {

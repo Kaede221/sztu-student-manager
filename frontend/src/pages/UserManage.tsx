@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Table, Button, Modal, Form, Input, Select, Space, Popconfirm, message, Card, Row, Col } from 'antd';
+import { Table, Button, Modal, Form, Input, Select, Space, Popconfirm, message, Card, Row, Col, Tag } from 'antd';
 import { PlusOutlined, SearchOutlined, ReloadOutlined } from '@ant-design/icons';
 import { getUserList, addUser, editUser, deleteUser } from '../api/user';
 import type { UserFilter } from '../api/user';
@@ -116,8 +116,14 @@ export default function UserManage() {
     { title: 'ID', dataIndex: 'id', key: 'id', width: 80 },
     { title: '用户名', dataIndex: 'username', key: 'username' },
     { title: '角色', dataIndex: 'role', key: 'role', render: (role: string) => {
-      const map: Record<string, string> = { ROLE_ADMIN: '管理员', ROLE_TEACHER: '教师', ROLE_STUDENT: '学生' };
-      return map[role] || role;
+      const map: Record<string, { label: string; bg: string; color: string }> = {
+        ROLE_ADMIN:   { label: '管理员', bg: '#FAF1DE', color: '#A87B1F' },
+        ROLE_TEACHER: { label: '教师',   bg: '#ECF0EE', color: '#4A6B5C' },
+        ROLE_STUDENT: { label: '学生',   bg: '#E8F2EC', color: '#2D6A4F' },
+      };
+      const m = map[role];
+      if (!m) return role;
+      return <Tag style={{ background: m.bg, color: m.color, border: 'none', fontWeight: 500 }}>{m.label}</Tag>;
     }},
     { title: '学工号', dataIndex: 'number', key: 'number', render: (v: string) => v || '-' },
     { title: '班级', dataIndex: 'classId', key: 'classId', render: (id: number) => classMap.get(id) || '-' },
@@ -126,11 +132,15 @@ export default function UserManage() {
       return g === 'MAN' ? '男' : '女';
     }},
     { title: '手机号', dataIndex: 'phoneNumber', key: 'phoneNumber', render: (v: string) => v || '-' },
-    { title: '状态', dataIndex: 'status', key: 'status', render: (s: boolean) => s ? '启用' : '禁用' },
+    { title: '状态', dataIndex: 'status', key: 'status', render: (s: boolean) =>
+      s
+        ? <Tag style={{ background: '#E8F2EC', color: '#2D6A4F', border: 'none' }}>启用</Tag>
+        : <Tag style={{ background: '#FBEBEE', color: '#B5384D', border: 'none' }}>禁用</Tag>
+    },
     ...(isAdmin ? [{
       title: '操作', key: 'action', render: (_: unknown, record: UserRecord) => {
         if (record.username === 'admin') {
-          return <span style={{ color: '#999' }}>系统账号</span>;
+          return <span style={{ color: 'var(--text-tertiary)' }}>系统账号</span>;
         }
         return (
           <Space>

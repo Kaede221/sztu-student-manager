@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Layout, Menu, Button, theme, Dropdown } from 'antd';
+import { Layout, Menu, Button, Dropdown } from 'antd';
 import {
   UserOutlined,
   BankOutlined,
@@ -29,14 +29,33 @@ const allMenuItems = [
   { key: '/log', icon: <FileTextOutlined />, label: '操作日志', roles: ['ROLE_ADMIN'] },
 ];
 
+const roleLabelMap: Record<string, string> = {
+  ROLE_ADMIN: '管理员',
+  ROLE_TEACHER: '教师',
+  ROLE_STUDENT: '学生',
+};
+
+const pageTitleMap: Record<string, string> = {
+  '/': '工作台',
+  '/user': '用户管理',
+  '/department': '院系管理',
+  '/class': '班级管理',
+  '/course': '课程管理',
+  '/enrollment': '选课中心',
+  '/score': '成绩查询',
+  '/log': '操作日志',
+};
+
 export default function MainLayout() {
   const [collapsed, setCollapsed] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
-  const { token: { colorBgContainer, borderRadiusLG } } = theme.useToken();
 
   const role = getRole();
   const username = getUsername();
+  const roleLabel = roleLabelMap[role] || '用户';
+  const avatarChar = (username[0] || 'U').toUpperCase();
+  const pageTitle = pageTitleMap[location.pathname] || '';
 
   const menuItems = allMenuItems.filter(item => item.roles.includes(role));
 
@@ -47,20 +66,21 @@ export default function MainLayout() {
 
   return (
     <Layout style={{ minHeight: '100vh' }}>
-      <Sider trigger={null} collapsible collapsed={collapsed}>
-        <div style={{
-          height: 48,
-          margin: 12,
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          color: '#fff',
-          fontWeight: 'bold',
-          fontSize: collapsed ? 14 : 16,
-          whiteSpace: 'nowrap',
-          overflow: 'hidden',
-        }}>
-          {collapsed ? 'SM' : '学生管理系统'}
+      <Sider
+        trigger={null}
+        collapsible
+        collapsed={collapsed}
+        className="app-sider"
+        width={220}
+      >
+        <div className="sider-logo">
+          <div className="sider-logo-mark">SM</div>
+          {!collapsed && (
+            <div>
+              <div className="sider-logo-text">学生管理系统</div>
+              <span className="sider-logo-sub">STUDENT · ADMIN</span>
+            </div>
+          )}
         </div>
         <Menu
           theme="dark"
@@ -71,34 +91,38 @@ export default function MainLayout() {
         />
       </Sider>
       <Layout>
-        <Header style={{
-          padding: '0 16px',
-          background: colorBgContainer,
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-        }}>
-          <Button
-            type="text"
-            icon={collapsed ? <MenuUnfoldOutlined /> : <MenuFoldOutlined />}
-            onClick={() => setCollapsed(!collapsed)}
-          />
-          <Dropdown menu={{
-            items: [
-              { key: 'logout', icon: <LogoutOutlined />, label: '退出登录', onClick: handleLogout },
-            ],
-          }}>
-            <span style={{ cursor: 'pointer' }}>
-              <UserOutlined style={{ marginRight: 8 }} />
-              {username}
+        <Header className="app-header" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
+            <Button
+              type="text"
+              icon={collapsed ? <MenuUnfoldOutlined /> : <MenuFoldOutlined />}
+              onClick={() => setCollapsed(!collapsed)}
+              style={{ fontSize: 16 }}
+            />
+            <span style={{ fontWeight: 600, fontSize: 15, letterSpacing: 1, color: 'var(--text-primary)' }}>
+              {pageTitle}
+            </span>
+          </div>
+          <Dropdown
+            menu={{
+              items: [
+                { key: 'logout', icon: <LogoutOutlined />, label: '退出登录', onClick: handleLogout },
+              ],
+            }}
+            placement="bottomRight"
+          >
+            <span className="header-avatar">
+              <span className="header-avatar-circle">{avatarChar}</span>
+              <span className="header-avatar-text">
+                <span className="header-avatar-name">{username}</span>
+                <span className="header-avatar-role">{roleLabel}</span>
+              </span>
             </span>
           </Dropdown>
         </Header>
         <Content style={{
-          margin: 16,
-          padding: 24,
-          background: colorBgContainer,
-          borderRadius: borderRadiusLG,
+          margin: 20,
+          padding: 0,
           minHeight: 280,
         }}>
           <Outlet />
@@ -107,3 +131,4 @@ export default function MainLayout() {
     </Layout>
   );
 }
+

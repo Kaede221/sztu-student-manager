@@ -26,7 +26,7 @@ export function getTokenPayload(): TokenPayload | null {
   const token = getToken();
   if (!token) return null;
   try {
-    return jwtDecode(token) as TokenPayload;
+    return jwtDecode(token) as unknown as TokenPayload;
   } catch {
     return null;
   }

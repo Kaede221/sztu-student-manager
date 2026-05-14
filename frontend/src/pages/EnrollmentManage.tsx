@@ -76,8 +76,8 @@ export default function EnrollmentManage() {
       title: '选课状态', key: 'status', width: 100,
       render: (_: unknown, record: CourseRecord) => (
         enrolledCourseIds.has(record.id)
-          ? <Tag color="green">已选</Tag>
-          : <Tag>未选</Tag>
+          ? <Tag style={{ background: '#E8F2EC', color: '#2D6A4F', border: 'none' }}>已选</Tag>
+          : <Tag style={{ background: '#F2EFE6', color: '#9A9A9A', border: 'none' }}>未选</Tag>
       ),
     },
     {

@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react';
-import { Card, Descriptions, Button, Modal, Form, Select, Input, message, Spin, Row, Col, Statistic } from 'antd';
+import { Card, Descriptions, Button, Modal, Form, Select, Input, message, Spin, Row, Col, Tag } from 'antd';
 import {
   EditOutlined, UserOutlined, BankOutlined, BookOutlined,
-  ReadOutlined, FormOutlined, LockOutlined,
+  ReadOutlined, FormOutlined, LockOutlined, TeamOutlined, SafetyCertificateOutlined,
 } from '@ant-design/icons';
 import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer, Legend } from 'recharts';
 import { getMyInfo, editMyInfo, getStats, changePassword } from '../api/user';
@@ -42,7 +42,25 @@ interface StatsData {
   enrollmentCount: number;
 }
 
-const COLORS = ['#1677ff', '#52c41a', '#faad14'];
+// 学院森林配色 + 苔色
+const CHART_COLORS = ['#2D6A4F', '#C9962E', '#6B8E7F'];
+
+interface StatCardConfig {
+  key: keyof StatsData;
+  label: string;
+  icon: React.ReactNode;
+  iconBg: string;
+  iconColor: string;
+}
+
+const statCards: StatCardConfig[] = [
+  { key: 'userCount',       label: '用户总数', icon: <TeamOutlined />,             iconBg: '#E8F2EC', iconColor: '#2D6A4F' },
+  { key: 'studentCount',    label: '学生人数', icon: <UserOutlined />,             iconBg: '#FAF1DE', iconColor: '#C9962E' },
+  { key: 'teacherCount',    label: '教师人数', icon: <SafetyCertificateOutlined />,iconBg: '#ECF0EE', iconColor: '#4A6B5C' },
+  { key: 'courseCount',     label: '课程数',   icon: <ReadOutlined />,             iconBg: '#E8F2EC', iconColor: '#2D6A4F' },
+  { key: 'departmentCount', label: '院系数',   icon: <BankOutlined />,             iconBg: '#F2EFE6', iconColor: '#6B6B6B' },
+  { key: 'enrollmentCount', label: '选课人次', icon: <FormOutlined />,             iconBg: '#FAF1DE', iconColor: '#A87B1F' },
+];
 
 export default function Dashboard() {
   const [userInfo, setUserInfo] = useState<UserInfo | null>(null);
@@ -115,7 +133,7 @@ export default function Dashboard() {
     } catch { /* handled by interceptor */ }
   };
 
-  if (loading) return <Spin />;
+  if (loading) return <div style={{ padding: 48, textAlign: 'center' }}><Spin /></div>;
   if (!userInfo) return null;
 
   const rolePieData = stats ? [
@@ -125,44 +143,33 @@ export default function Dashboard() {
   ] : [];
 
   return (
-    <>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
       {isAdmin && stats && (
         <>
-          <Row gutter={16} style={{ marginBottom: 16 }}>
-            <Col span={4}>
-              <Card>
-                <Statistic title="用户总数" value={stats.userCount} prefix={<UserOutlined />} />
-              </Card>
-            </Col>
-            <Col span={4}>
-              <Card>
-                <Statistic title="学生数" value={stats.studentCount} prefix={<UserOutlined />} />
-              </Card>
-            </Col>
-            <Col span={4}>
-              <Card>
-                <Statistic title="教师数" value={stats.teacherCount} prefix={<UserOutlined />} />
-              </Card>
-            </Col>
-            <Col span={4}>
-              <Card>
-                <Statistic title="课程数" value={stats.courseCount} prefix={<ReadOutlined />} />
-              </Card>
-            </Col>
-            <Col span={4}>
-              <Card>
-                <Statistic title="院系数" value={stats.departmentCount} prefix={<BankOutlined />} />
-              </Card>
-            </Col>
-            <Col span={4}>
-              <Card>
-                <Statistic title="选课人次" value={stats.enrollmentCount} prefix={<FormOutlined />} />
-              </Card>
-            </Col>
+          <Row gutter={[16, 16]}>
+            {statCards.map((card) => (
+              <Col xs={12} sm={8} lg={4} key={card.key}>
+                <Card className="card-hover" styles={{ body: { padding: 18 } }}>
+                  <div className="stat-card">
+                    <div className="stat-card-icon" style={{ background: card.iconBg, color: card.iconColor }}>
+                      {card.icon}
+                    </div>
+                    <div className="stat-card-body">
+                      <div className="stat-card-label">{card.label}</div>
+                      <div className="stat-card-value">{stats[card.key]}</div>
+                    </div>
+                  </div>
+                </Card>
+              </Col>
+            ))}
           </Row>
-          <Row gutter={16} style={{ marginBottom: 16 }}>
-            <Col span={12}>
-              <Card title="用户角色分布">
+
+          <Row gutter={[16, 16]}>
+            <Col xs={24} lg={12}>
+              <Card
+                title={<span className="section-title">用户角色分布</span>}
+                extra={<Tag style={{ background: 'var(--bg-tag-soft)', color: 'var(--color-primary)', border: 'none' }}>实时</Tag>}
+              >
                 <ResponsiveContainer width="100%" height={280}>
                   <PieChart>
                     <Pie
@@ -171,42 +178,64 @@ export default function Dashboard() {
                       nameKey="name"
                       cx="50%"
                       cy="50%"
+                      innerRadius={60}
                       outerRadius={100}
-                      label={({ name, value }) => `${name}: ${value}`}
+                      paddingAngle={2}
+                      label={({ name, value }) => `${name} ${value}`}
                     >
                       {rolePieData.map((_, index) => (
-                        <Cell key={index} fill={COLORS[index % COLORS.length]} />
+                        <Cell key={index} fill={CHART_COLORS[index % CHART_COLORS.length]} stroke="#fff" strokeWidth={2} />
                       ))}
                     </Pie>
-                    <Tooltip />
-                    <Legend />
+                    <Tooltip
+                      contentStyle={{
+                        background: '#fff',
+                        border: '1px solid var(--border-soft)',
+                        borderRadius: 10,
+                        boxShadow: '0 12px 32px rgba(31,58,46,0.08)',
+                      }}
+                    />
+                    <Legend iconType="circle" />
                   </PieChart>
                 </ResponsiveContainer>
               </Card>
             </Col>
-            <Col span={12}>
-              <Card title="系统概况">
-                <Row gutter={[16, 16]}>
-                  <Col span={12}>
-                    <Statistic title="班级总数" value={stats.classCount} prefix={<BookOutlined />} />
-                  </Col>
-                  <Col span={12}>
-                    <Statistic title="课程总数" value={stats.courseCount} prefix={<ReadOutlined />} />
-                  </Col>
-                  <Col span={12}>
-                    <Statistic title="院系总数" value={stats.departmentCount} prefix={<BankOutlined />} />
-                  </Col>
-                  <Col span={12}>
-                    <Statistic title="选课人次" value={stats.enrollmentCount} prefix={<FormOutlined />} />
-                  </Col>
+            <Col xs={24} lg={12}>
+              <Card title={<span className="section-title">系统概况</span>}>
+                <Row gutter={[16, 20]}>
+                  {[
+                    { label: '班级总数', value: stats.classCount,       icon: <BookOutlined /> },
+                    { label: '课程总数', value: stats.courseCount,      icon: <ReadOutlined /> },
+                    { label: '院系总数', value: stats.departmentCount,  icon: <BankOutlined /> },
+                    { label: '选课人次', value: stats.enrollmentCount,  icon: <FormOutlined /> },
+                  ].map((it) => (
+                    <Col span={12} key={it.label}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                        <div style={{
+                          width: 40, height: 40, borderRadius: 10,
+                          background: 'var(--color-primary-soft)', color: 'var(--color-primary)',
+                          display: 'flex', alignItems: 'center', justifyContent: 'center',
+                          fontSize: 18,
+                        }}>{it.icon}</div>
+                        <div>
+                          <div style={{ fontSize: 12, color: 'var(--text-secondary)', letterSpacing: 1 }}>{it.label}</div>
+                          <div style={{
+                            fontFamily: 'var(--font-mono)', fontSize: 22, fontWeight: 600,
+                            letterSpacing: '-0.5px', color: 'var(--text-primary)', lineHeight: 1.2,
+                          }}>{it.value}</div>
+                        </div>
+                      </div>
+                    </Col>
+                  ))}
                 </Row>
               </Card>
             </Col>
           </Row>
         </>
       )}
+
       <Card
-        title="个人信息"
+        title={<span className="section-title">个人信息</span>}
         extra={
           <>
             <Button type="link" icon={<LockOutlined />} onClick={() => { passwordForm.resetFields(); setPasswordModalOpen(true); }}>修改密码</Button>
@@ -218,12 +247,20 @@ export default function Dashboard() {
       >
         <Descriptions column={2}>
           <Descriptions.Item label="用户名">{userInfo.username}</Descriptions.Item>
-          <Descriptions.Item label="角色">{roleMap[userInfo.role] || userInfo.role}</Descriptions.Item>
+          <Descriptions.Item label="角色">
+            <Tag style={{ background: 'var(--bg-tag-soft)', color: 'var(--color-primary)', border: 'none' }}>
+              {roleMap[userInfo.role] || userInfo.role}
+            </Tag>
+          </Descriptions.Item>
           <Descriptions.Item label="学工号">{userInfo.number || '-'}</Descriptions.Item>
           <Descriptions.Item label="班级">{classMap.get(userInfo.classId) || '-'}</Descriptions.Item>
           <Descriptions.Item label="性别">{userInfo.gender === 'MAN' ? '男' : userInfo.gender === 'WOMAN' ? '女' : '-'}</Descriptions.Item>
           <Descriptions.Item label="手机号">{userInfo.phoneNumber || '-'}</Descriptions.Item>
-          <Descriptions.Item label="账号状态">{userInfo.status ? '启用' : '禁用'}</Descriptions.Item>
+          <Descriptions.Item label="账号状态">
+            {userInfo.status
+              ? <Tag style={{ background: 'var(--bg-tag-soft)', color: 'var(--color-success)', border: 'none' }}>启用</Tag>
+              : <Tag style={{ background: 'var(--bg-tag-error)', color: 'var(--color-error)', border: 'none' }}>禁用</Tag>}
+          </Descriptions.Item>
         </Descriptions>
       </Card>
 
@@ -284,6 +321,6 @@ export default function Dashboard() {
           </Form.Item>
         </Form>
       </Modal>
-    </>
+    </div>
   );
 }
