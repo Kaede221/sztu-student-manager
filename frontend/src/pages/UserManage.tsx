@@ -128,14 +128,19 @@ export default function UserManage() {
     { title: '手机号', dataIndex: 'phoneNumber', key: 'phoneNumber', render: (v: string) => v || '-' },
     { title: '状态', dataIndex: 'status', key: 'status', render: (s: boolean) => s ? '启用' : '禁用' },
     ...(isAdmin ? [{
-      title: '操作', key: 'action', render: (_: unknown, record: UserRecord) => (
-        <Space>
-          <Button type="link" onClick={() => handleEdit(record)}>编辑</Button>
-          <Popconfirm title="确定删除？" onConfirm={() => handleDelete(record.id)}>
-            <Button type="link" danger>删除</Button>
-          </Popconfirm>
-        </Space>
-      ),
+      title: '操作', key: 'action', render: (_: unknown, record: UserRecord) => {
+        if (record.username === 'admin') {
+          return <span style={{ color: '#999' }}>系统账号</span>;
+        }
+        return (
+          <Space>
+            <Button type="link" onClick={() => handleEdit(record)}>编辑</Button>
+            <Popconfirm title="确定删除？" onConfirm={() => handleDelete(record.id)}>
+              <Button type="link" danger>删除</Button>
+            </Popconfirm>
+          </Space>
+        );
+      },
     }] : []),
   ];
 

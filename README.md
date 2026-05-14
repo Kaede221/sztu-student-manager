@@ -74,115 +74,31 @@
 
 ## 快速开始
 
-### 方式一：Docker 部署（推荐）
+### 方式一：Docker 起 MySQL + IDE 跑后端（推荐）
 
-只需安装 Docker，无需手动配置数据库，一键启动：
+开发场景下推荐这种组合：MySQL 用容器免安装，后端在 IDEA / VSCode 里运行方便热重载和调试。
+
+#### 1. 启动 MySQL
 
 ```bash
 cd backend
 docker compose up -d
 ```
 
-首次启动会自动构建后端镜像、创建 MySQL 容器并执行建表脚本。
+默认只会启动 `mysql` 服务（监听 `localhost:3306`，用户名 / 密码 `root`/`root`，库名 `stumanage`）。`backend` 服务被放在 `full` profile 下，默认不启动。
 
-- 后端：`http://localhost:8080`
-- 接口文档：`http://localhost:8080/swagger-ui/index.html`
-- MySQL：`localhost:3306`（用户名 `root`，密码 `root`）
+#### 2. 启动后端
 
-常用命令：
-
-```bash
-docker compose logs -f backend   # 查看后端日志
-docker compose down              # 停止服务
-docker compose down -v           # 停止并清除数据库数据
-docker compose up -d --build     # 代码修改后重新构建启动
-```
-
-### 方式二：本地开发
-
-#### 环境要求
-
-- Java 17+
-- Node.js 18+
-- MySQL 8+
-- pnpm
-
-#### 数据库初始化
-
-创建数据库（Flyway 会在启动时自动执行迁移脚本建表）：
-
-```bash
-mysql -uroot -p -e "CREATE DATABASE IF NOT EXISTS stumanage"
-```
-
-<details>
-<summary>或手动执行以下 SQL</summary>
-
-```sql
-CREATE DATABASE stumanage;
-USE stumanage;
-
-CREATE TABLE my_user (
-  id          BIGINT PRIMARY KEY AUTO_INCREMENT,
-  username    VARCHAR(100) UNIQUE NOT NULL,
-  password    VARCHAR(255) NOT NULL,
-  role        VARCHAR(20) DEFAULT 'ROLE_STUDENT',
-  status      TINYINT DEFAULT 1,
-  number      VARCHAR(50) UNIQUE,
-  class_id    BIGINT,
-  gender      VARCHAR(50) DEFAULT 'MAN',
-  phone_number VARCHAR(20)
-);
-
-CREATE TABLE my_department (
-  id          BIGINT PRIMARY KEY AUTO_INCREMENT,
-  name        VARCHAR(100) NOT NULL,
-  description VARCHAR(100) NOT NULL
-);
-
-CREATE TABLE my_class (
-  id            BIGINT PRIMARY KEY AUTO_INCREMENT,
-  department_id BIGINT NOT NULL,
-  name          VARCHAR(100) NOT NULL,
-  grade         INT NOT NULL
-);
-
-CREATE TABLE my_course (
-  id          BIGINT PRIMARY KEY AUTO_INCREMENT,
-  name        VARCHAR(100) NOT NULL DEFAULT '默认课程',
-  credit      INT NOT NULL DEFAULT 1,
-  teacher_id  BIGINT NOT NULL,
-  capacity    INT NOT NULL DEFAULT 50,
-  description VARCHAR(200)
-);
-
-CREATE TABLE my_enrollment (
-  id         BIGINT PRIMARY KEY AUTO_INCREMENT,
-  student_id BIGINT NOT NULL,
-  course_id  BIGINT NOT NULL,
-  status     VARCHAR(100) DEFAULT 'ENROLLED' NOT NULL
-);
-
-CREATE TABLE my_score (
-  id            BIGINT PRIMARY KEY AUTO_INCREMENT,
-  enrollment_id BIGINT NOT NULL,
-  score         DECIMAL(5, 2) NOT NULL
-);
-```
-
-</details>
-
-#### 后端启动
+直接在 IDEA 中运行 `BackendApplication`，或在命令行执行：
 
 ```bash
 cd backend
-# 修改 src/main/resources/application.yaml 中的数据库连接信息
 ./mvnw spring-boot:run
 ```
 
-后端默认运行在 `http://localhost:8080`，接口文档访问 `http://localhost:8080/swagger-ui/index.html`
+Flyway 会在启动时自动建表 + 迁移，无需手动执行 SQL。
 
-#### 前端启动
+#### 3. 启动前端
 
 ```bash
 cd frontend
@@ -190,10 +106,45 @@ pnpm install
 pnpm dev
 ```
 
-前端默认运行在 `http://localhost:5173`
+- 后端：`http://localhost:8080`
+- 接口文档：`http://localhost:8080/swagger-ui/index.html`
+- 前端：`http://localhost:5173`
 
-### 初始使用
+### 方式二：全 Docker 部署
 
-1. 通过注册页面创建账号（默认角色为学生）
-2. 在数据库中手动将某个用户的 `role` 改为 `ROLE_ADMIN` 以获得管理员权限
-3. 使用管理员账号登录后即可管理所有功能
+适用于一键演示 / 部署，连后端也跑在容器里：
+
+```bash
+cd backend
+docker compose --profile full up -d --build
+```
+
+常用命令：
+
+```bash
+docker compose logs -f backend           # 查看后端日志
+docker compose --profile full down       # 停止全部服务
+docker compose down -v                   # 停止并清除数据库数据
+```
+
+### 方式三：完全本地（不用 Docker）
+
+需要自行安装 Java 17+、Node.js 18+、pnpm、MySQL 8+，并手动创建库：
+
+```bash
+mysql -uroot -p -e "CREATE DATABASE IF NOT EXISTS stumanage"
+```
+
+之后参考方式一的「启动后端」「启动前端」步骤。如数据库账号 / 端口不同，需相应修改 [backend/src/main/resources/application.yaml](backend/src/main/resources/application.yaml)。
+
+### 初始账号
+
+系统启动后会自动创建一个默认管理员账号：
+
+| 用户名 | 密码 | 角色 |
+| --- | --- | --- |
+| `admin` | `admin123` | 管理员 |
+
+> ⚠️ 首次登录后请立即在「个人中心 → 修改密码」处修改默认密码。`admin` 账号受系统保护，无法被删除或修改资料，仅允许修改密码。
+>
+> 其他用户可通过注册页面创建（默认角色为学生），由 `admin` 在用户管理中调整角色。

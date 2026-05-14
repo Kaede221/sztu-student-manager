@@ -28,6 +28,8 @@ import java.util.Map;
 @RequestMapping("/api/user")
 @RequiredArgsConstructor
 public class UserController {
+    private static final String PROTECTED_ADMIN_USERNAME = "admin";
+
     private final UserService userService;
     private final JwtUtil jwtUtil;
     private final PasswordEncoder passwordEncoder;
@@ -76,6 +78,9 @@ public class UserController {
     @PreAuthorize("hasAuthority('ROLE_ADMIN')")
     @PostMapping
     public RequestResult<String> addUser(@Valid @RequestBody CreateUserRequest createUserRequest) {
+        if (PROTECTED_ADMIN_USERNAME.equalsIgnoreCase(createUserRequest.getUsername())) {
+            return RequestResult.error("用户名 admin 为系统保留，无法创建");
+        }
         MyUser user = new MyUser();
         user.setPassword(createUserRequest.getPassword());
         user.setPhoneNumber(createUserRequest.getPhoneNumber());
@@ -100,6 +105,10 @@ public class UserController {
     @PreAuthorize("hasAuthority('ROLE_ADMIN')")
     @PutMapping
     public RequestResult<String> editUser(@Valid @RequestBody UpdateUserRequest updateUserRequest) {
+        MyUser target = userService.getById(updateUserRequest.getId());
+        if (target != null && PROTECTED_ADMIN_USERNAME.equals(target.getUsername())) {
+            return RequestResult.error("系统管理员账号不可修改，如需修改密码请前往个人中心");
+        }
         MyUser user = new MyUser();
         user.setPassword(updateUserRequest.getPassword());
         user.setPhoneNumber(updateUserRequest.getPhoneNumber());
@@ -127,6 +136,10 @@ public class UserController {
     @PreAuthorize("hasAuthority('ROLE_ADMIN')")
     @DeleteMapping("/{id}")
     public RequestResult<String> deleteUserById(@PathVariable Long id) {
+        MyUser target = userService.getById(id);
+        if (target != null && PROTECTED_ADMIN_USERNAME.equals(target.getUsername())) {
+            return RequestResult.error("系统管理员账号不可删除");
+        }
         boolean res = userService.removeById(id);
         if (res) return RequestResult.success(null);
         return RequestResult.error("Error on delete userId: " + id);
@@ -183,6 +196,9 @@ public class UserController {
     @PutMapping("/me")
     public RequestResult<String> editMyInfo(Authentication authentication, @RequestBody EditMeRequest editMeRequest) {
         String username = authentication.getName();
+        if (PROTECTED_ADMIN_USERNAME.equals(username)) {
+            return RequestResult.error("系统管理员账号仅允许修改密码");
+        }
         LambdaQueryWrapper<MyUser> wrapper = new LambdaQueryWrapper<>();
         wrapper.eq(MyUser::getUsername, username);
         MyUser user = userService.getOne(wrapper);

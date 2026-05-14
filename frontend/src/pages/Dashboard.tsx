@@ -210,7 +210,9 @@ export default function Dashboard() {
         extra={
           <>
             <Button type="link" icon={<LockOutlined />} onClick={() => { passwordForm.resetFields(); setPasswordModalOpen(true); }}>修改密码</Button>
-            <Button type="link" icon={<EditOutlined />} onClick={handleEdit}>编辑资料</Button>
+            {userInfo.username !== 'admin' && (
+              <Button type="link" icon={<EditOutlined />} onClick={handleEdit}>编辑资料</Button>
+            )}
           </>
         }
       >
