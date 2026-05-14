@@ -898,7 +898,7 @@ cd backend
 ./mvnw spring-boot:run
 ```
 
-后端将在 `http://localhost:8080` 启动。
+后端将在 `http://localhost:28765` 启动。
 
 ### 9.4 启动前端
 

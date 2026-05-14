@@ -450,7 +450,7 @@ flowchart LR
 
 ### 6.1 接口文档
 
-后端启动后访问：`http://localhost:8080/swagger-ui/index.html`，由 SpringDoc OpenAPI 自动生成。
+后端启动后访问：`http://localhost:28765/swagger-ui/index.html`，由 SpringDoc OpenAPI 自动生成。
 
 ### 6.2 关键实现要点
 

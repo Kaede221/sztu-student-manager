@@ -106,8 +106,8 @@ pnpm install
 pnpm dev
 ```
 
-- 后端：`http://localhost:8080`
-- 接口文档：`http://localhost:8080/swagger-ui/index.html`
+- 后端：`http://localhost:28765`
+- 接口文档：`http://localhost:28765/swagger-ui/index.html`
 - 前端：`http://localhost:5173`
 
 ### 方式二：全 Docker 部署
